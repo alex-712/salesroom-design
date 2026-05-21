@@ -2,7 +2,7 @@
    SalesRoom × Lumi — Shared shell, nav, and component library
    ========================================================================= */
 
-@import url('../colors_and_type.css');
+@import url('./colors_and_type.css');
 
 * { box-sizing: border-box; }
 

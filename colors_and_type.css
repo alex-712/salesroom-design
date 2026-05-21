@@ -1,0 +1,300 @@
+/* =========================================================================
+   Lumi Design System — Foundations
+   颜色、字体、间距、圆角、阴影、动效
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---------- COLORS ---------- */
+  /* Canvas (暖米白) — 像纸 */
+  --canvas:        oklch(0.985 0.008 75);
+  --canvas-sunk:   oklch(0.965 0.010 70);   /* 凹陷处,如输入框背景 */
+  --surface:       oklch(1.000 0.000 0);     /* 卡片表面 (近白) */
+  --surface-warm:  oklch(0.992 0.006 75);    /* 暖一点的卡片 */
+
+  /* Ink (暖墨) — 前景 */
+  --ink:           oklch(0.235 0.020 50);   /* 主要文字,像浓茶 */
+  --ink-2:         oklch(0.430 0.020 55);   /* 次要文字 */
+  --ink-3:         oklch(0.620 0.018 60);   /* 三级文字、placeholder */
+  --ink-4:         oklch(0.780 0.012 65);   /* 弱化文字、disabled */
+
+  /* Lines (边框) — 暖色低透明 */
+  --line:          oklch(0.235 0.020 50 / 0.10);
+  --line-strong:   oklch(0.235 0.020 50 / 0.18);
+  --line-subtle:   oklch(0.235 0.020 50 / 0.06);
+
+  /* Ember — Primary (珊瑚橙, 夕阳/篝火) */
+  --ember:         oklch(0.720 0.160 45);
+  --ember-hover:   oklch(0.680 0.170 43);
+  --ember-press:   oklch(0.640 0.175 41);
+  --ember-tint:    oklch(0.940 0.045 55);   /* 浅色填充 */
+  --ember-ink:     oklch(0.380 0.130 40);   /* 用于在 ember-tint 上的文字 */
+  --on-ember:      oklch(0.995 0.005 80);   /* 在 ember 上的文字 */
+
+  /* Plum — Secondary (暖紫) */
+  --plum:          oklch(0.620 0.140 330);
+  --plum-tint:     oklch(0.940 0.040 330);
+  --plum-ink:      oklch(0.360 0.120 330);
+
+  /* Honey — Tertiary (蜂蜜黄,装饰/成功) */
+  --honey:         oklch(0.820 0.130 80);
+  --honey-tint:    oklch(0.960 0.040 85);
+  --honey-ink:     oklch(0.420 0.100 70);
+
+  /* Semantic */
+  --success:       oklch(0.680 0.130 155);
+  --success-tint:  oklch(0.940 0.040 155);
+  --warn:          oklch(0.780 0.140 70);
+  --warn-tint:     oklch(0.955 0.045 75);
+  --danger:        oklch(0.620 0.180 25);
+  --danger-tint:   oklch(0.945 0.050 30);
+
+  /* ---------- TYPE ---------- */
+  --font-display: 'DM Serif Display', 'Noto Serif SC', Georgia, serif;
+  --font-sans:    'Manrope', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* Type scale (px → rem at 16px base) */
+  --text-2xs: 0.6875rem; /* 11 */
+  --text-xs:  0.75rem;   /* 12 */
+  --text-sm:  0.8125rem; /* 13 */
+  --text-base:0.9375rem; /* 15 */
+  --text-md:  1rem;      /* 16 */
+  --text-lg:  1.125rem;  /* 18 */
+  --text-xl:  1.375rem;  /* 22 */
+  --text-2xl: 1.75rem;   /* 28 */
+  --text-3xl: 2.25rem;   /* 36 */
+  --text-4xl: 3rem;      /* 48 */
+  --text-5xl: 4rem;      /* 64 */
+
+  /* Weights */
+  --w-light:    300;
+  --w-regular:  400;
+  --w-medium:   500;
+  --w-semibold: 600;
+  --w-bold:     700;
+
+  /* Line heights */
+  --lh-tight:   1.15;
+  --lh-snug:    1.30;
+  --lh-normal:  1.50;
+  --lh-relaxed: 1.65;
+
+  /* Letter spacing */
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:  0.02em;
+  --tracking-eyebrow: 0.12em;
+
+  /* ---------- SPACING ---------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-7:  32px;
+  --space-8:  40px;
+  --space-9:  56px;
+  --space-10: 72px;
+  --space-11: 96px;
+  --space-12: 128px;
+
+  /* ---------- RADII ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* ---------- SHADOWS ---------- */
+  --shadow-soft:
+    0 1px 2px oklch(0.235 0.020 50 / 0.04),
+    0 2px 8px oklch(0.235 0.020 50 / 0.05);
+  --shadow-lift:
+    0 2px 4px oklch(0.235 0.020 50 / 0.05),
+    0 12px 28px oklch(0.235 0.020 50 / 0.10);
+  --shadow-pop:
+    0 4px 8px oklch(0.235 0.020 50 / 0.06),
+    0 24px 48px oklch(0.235 0.020 50 / 0.16);
+  --shadow-glow:
+    0 0 0 4px oklch(0.720 0.160 45 / 0.15),
+    0 6px 16px oklch(0.720 0.160 45 / 0.25);
+  --shadow-focus:
+    0 0 0 3px oklch(0.720 0.160 45 / 0.30);
+  --shadow-inset:
+    inset 0 1px 2px oklch(0.235 0.020 50 / 0.06);
+
+  /* ---------- MOTION ---------- */
+  --ease-out:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:   150ms;
+  --dur-base:   300ms;
+  --dur-slow:   500ms;
+
+  /* ---------- LAYOUT ---------- */
+  --container-narrow: 720px;
+  --container-base:   960px;
+  --container-wide:   1200px;
+  --container-full:   1440px;
+}
+
+/* ========== DARK MODE ==========
+   设计语言: 不是简单反相 — 暖色基底保留, 浓墨变成"夜烛色"
+   ——晚上看图比白底更安静, 但仍是温暖的、不冷峻 */
+[data-theme="dark"] {
+  /* 暖深背景, 像深焙咖啡, 不是纯黑 */
+  --canvas:        oklch(0.180 0.012 50);
+  --canvas-sunk:   oklch(0.150 0.012 48);
+  --surface:       oklch(0.220 0.014 52);
+  --surface-warm:  oklch(0.245 0.018 55);
+
+  /* 文字反相 — 暖白, 不是纯白 */
+  --ink:           oklch(0.965 0.010 75);
+  --ink-2:         oklch(0.800 0.012 70);
+  --ink-3:         oklch(0.620 0.014 65);
+  --ink-4:         oklch(0.420 0.014 60);
+
+  /* 边框 — 浅暖色低透明 */
+  --line:          oklch(0.965 0.010 75 / 0.10);
+  --line-strong:   oklch(0.965 0.010 75 / 0.18);
+  --line-subtle:   oklch(0.965 0.010 75 / 0.06);
+
+  /* Ember — 暗色下要亮一档 (因为对比度变了) */
+  --ember:         oklch(0.760 0.150 50);
+  --ember-hover:   oklch(0.800 0.155 52);
+  --ember-press:   oklch(0.720 0.150 48);
+  --ember-tint:    oklch(0.330 0.080 50);   /* 深色 tint = 半透深色 */
+  --ember-ink:     oklch(0.870 0.130 60);
+  --on-ember:      oklch(0.150 0.020 40);
+
+  /* Plum, Honey - similar treatment */
+  --plum:          oklch(0.720 0.140 330);
+  --plum-tint:     oklch(0.300 0.080 330);
+  --plum-ink:      oklch(0.880 0.110 330);
+  --honey:         oklch(0.860 0.135 85);
+  --honey-tint:    oklch(0.330 0.080 80);
+  --honey-ink:     oklch(0.900 0.115 80);
+
+  /* Semantic - 深色下都亮一档 */
+  --success:       oklch(0.760 0.130 155);
+  --success-tint:  oklch(0.300 0.070 155);
+  --warn:          oklch(0.830 0.140 75);
+  --warn-tint:     oklch(0.320 0.080 75);
+  --danger:        oklch(0.720 0.170 30);
+  --danger-tint:   oklch(0.320 0.090 30);
+
+  /* 阴影 - 深色下应为发光, 不是投影 */
+  --shadow-soft:
+    0 1px 2px oklch(0 0 0 / 0.40),
+    0 2px 8px oklch(0 0 0 / 0.30);
+  --shadow-lift:
+    0 4px 16px oklch(0 0 0 / 0.50),
+    0 1px 0 oklch(0.965 0.010 75 / 0.04) inset;
+  --shadow-pop:
+    0 8px 32px oklch(0 0 0 / 0.60),
+    0 1px 0 oklch(0.965 0.010 75 / 0.06) inset;
+  --shadow-glow:
+    0 0 0 4px oklch(0.760 0.150 50 / 0.20),
+    0 6px 20px oklch(0.760 0.150 50 / 0.30);
+}
+
+[data-theme="dark"] code,
+[data-theme="dark"] .mono {
+  background: var(--canvas-sunk);
+  color: var(--ink-2);
+}
+
+/* ============== Semantic element styles ============== */
+
+html, body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--lh-normal);
+  letter-spacing: var(--tracking-snug);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-5xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--w-semibold);
+  font-size: var(--text-xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tracking-snug);
+}
+h4, .h4 {
+  font-family: var(--font-sans);
+  font-weight: var(--w-semibold);
+  font-size: var(--text-lg);
+  line-height: var(--lh-snug);
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-weight: var(--w-semibold);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--ink-2);
+}
+p, .body {
+  font-size: var(--text-md);
+  line-height: var(--lh-relaxed);
+  color: var(--ink);
+}
+.body-sm {
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+  color: var(--ink-2);
+}
+.caption {
+  font-size: var(--text-xs);
+  line-height: var(--lh-normal);
+  color: var(--ink-3);
+}
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--canvas-sunk);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  color: var(--ink-2);
+}
+
+/* ============== Utility classes ============== */
+.lumi-glow-bg {
+  position: relative;
+  isolation: isolate;
+}
+.lumi-glow-bg::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 70%;
+  background: radial-gradient(60% 100% at 50% 0%, var(--ember-tint), transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
