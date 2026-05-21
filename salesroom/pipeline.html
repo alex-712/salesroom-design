@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>案件 — SalesRoom</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Pipeline page ===== */
+  .page-wrap {
+    max-width: none;
+    padding: 0;
+    height: calc(100vh - 60px);
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    overflow: hidden;
+  }
+
+  /* LEFT: board column */
+  .board-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--line);
+  }
+  .board-head {
+    padding: 22px 28px 14px;
+  }
+  .board-head .topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .board-head h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  .board-head .sub {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+  .board-head .actions { display: flex; gap: 8px; }
+
+  /* View switcher */
+  .view-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 28px 14px;
+  }
+  .seg {
+    display: inline-flex;
+    background: var(--canvas-sunk);
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid var(--line);
+  }
+  .seg-btn {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 13px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .seg-btn.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-soft);
+    font-weight: 600;
+  }
+
+  /* Board grid — equal columns by stage (real product has 7 stages) */
+  .board {
+    flex: 1;
+    overflow: auto;
+    padding: 0 28px 28px;
+  }
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(228px, 1fr));
+    gap: 12px;
+    min-height: 100%;
+    align-items: stretch;
+    min-width: 1600px;
+  }
+  .col {
+    background: var(--canvas-sunk);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .col-h {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: oklch(0.985 0.008 75 / 0.6);
+    backdrop-filter: blur(8px);
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
+  }
+  .col-h .name {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .col-h .name .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+  }
+  .col-h .meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .col-cards {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .col-cards .see-more {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+  }
+  .col-cards .see-more:hover { background: var(--surface); color: var(--ink); }
+
+  .ccard {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px 10px;
+    cursor: pointer;
+    transition: all 150ms var(--ease-out);
+  }
+  .ccard:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-1px);
+  }
+  .ccard.selected {
+    border-color: var(--ember);
+    box-shadow: 0 0 0 3px oklch(0.72 0.16 45 / 0.15);
+  }
+  .ccard .ct {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ccard .prod {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+  }
+  .ccard .footer {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .ccard .footer .who {
+    width: 18px; height: 18px; border-radius: 999px;
+    background: var(--plum-tint); color: var(--plum-ink);
+    display: grid; place-items: center;
+    font-size: 9.5px; font-weight: 600;
+    font-family: var(--font-sans);
+  }
+
+  /* Column dot colors per stage */
+  .dot-lead { background: oklch(0.78 0.04 75); }
+  .dot-prop { background: var(--honey); }
+  .dot-neg { background: var(--ember); }
+  .dot-dev { background: var(--plum); }
+  .dot-test { background: oklch(0.58 0.10 195); }
+  .dot-del  { background: oklch(0.62 0.12 155); }
+  .dot-main { background: oklch(0.58 0.018 240); }
+
+  /* ============= RIGHT: detail panel ============= */
+  .detail {
+    background: var(--surface);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .det-head {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: oklch(1 0 0 / 0.96);
+    backdrop-filter: blur(8px);
+    z-index: 2;
+  }
+  .det-breadcrumb {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .det-head h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 6px;
+  }
+  .det-head .product {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .det-head .meta-row {
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-3);
+    flex-wrap: wrap;
+  }
+  .det-head .meta-row .v {
+    color: var(--ink);
+    font-weight: 600;
+    margin-left: 5px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Progress steps — 7 stages from real product */
+  .steps {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .step {
+    text-align: center;
+  }
+  .step .bar {
+    height: 4px;
+    background: var(--canvas-sunk);
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+  .step .bar.done { background: var(--ember); }
+  .step .bar.current {
+    background: var(--ember);
+    box-shadow: 0 0 0 3px oklch(0.72 0.16 45 / 0.18);
+  }
+  .step .l {
+    font-size: 9.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .step.current .l { color: var(--ember); font-weight: 600; }
+  .step.done .l { color: var(--ink-2); }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 26px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 188px;
+    z-index: 1;
+  }
+  .tabs .tab {
+    padding: 11px 0;
+    margin-right: 20px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tabs .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ember);
+    font-weight: 600;
+  }
+  .tabs .tab .ct {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tabs .tab.active .ct { color: var(--ember); }
+
+  .det-body {
+    padding: 22px 26px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* AI 会議ブリーフィング — real product feature (a button that generates a brief from meeting transcripts) */
+  .ai-brief-card {
+    background: linear-gradient(180deg, var(--ember-tint), var(--surface) 90%);
+    border: 1px solid oklch(0.72 0.16 45 / 0.20);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .ai-brief-card .icon {
+    width: 36px; height: 36px;
+    border-radius: 999px;
+    background: var(--ember);
+    color: var(--on-ember);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px oklch(0.55 0.16 35 / 0.3);
+  }
+  .ai-brief-card .l1 {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .ai-brief-card .l2 {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.45;
+  }
+  .ai-brief-card .ll { flex: 1; min-width: 0; }
+  .ai-brief-card .btn-primary { flex-shrink: 0; }
+
+  /* Section heading */
+  .det-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .det-section-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .det-section-h .l {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .det-section .body-text {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* Next-actions list (manual, not AI) */
+  .next-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .na-item {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--canvas-sunk);
+    border-radius: 8px;
+    align-items: center;
+  }
+  .na-check {
+    width: 16px; height: 16px;
+    border-radius: 5px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+  }
+  .na-text { font-size: 13px; color: var(--ink); line-height: 1.4; }
+  .na-text .when {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    margin-top: 2px;
+  }
+  .na-who {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--plum-tint);
+    color: var(--plum-ink);
+  }
+
+  /* Metadata table */
+  .meta-list {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 8px 14px;
+    font-size: 13px;
+  }
+  .meta-list dt {
+    color: var(--ink-3);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    align-self: center;
+  }
+  .meta-list dd {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .meta-list dd .add {
+    color: var(--ember);
+    background: none;
+    border: 1px dashed oklch(0.72 0.16 45 / 0.35);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .meta-list dd .add:hover { background: var(--ember-tint); border-style: solid; }
+
+  /* Contacts */
+  .contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .contact-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .contact-row:last-child { border-bottom: none; }
+  .contact-av {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: var(--ember-tint);
+    color: var(--ember-ink);
+    display: grid; place-items: center;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .contact-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .contact-role {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+  .contact-tag {
+    font-size: 10.5px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .contact-tag.dm { background: var(--ember-tint); color: var(--ember-ink); }
+
+  /* Stale warning chip on detail */
+  .stale-tag {
+    color: oklch(0.4 0.14 25);
+    background: var(--danger-tint);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="nav">
+    <a class="nav-brand" href="./index.html"><span class="nav-mark">SR</span><span class="nav-name">SalesRoom</span></a>
+    <nav class="nav-links">
+      <a class="nav-link" href="./home.html">ホーム</a>
+      <a class="nav-link active" href="./pipeline.html">案件 <span class="count">255</span></a>
+      <a class="nav-link" href="./customers.html">顧客 <span class="count">220</span></a>
+      <a class="nav-link" href="./inbox.html">受信箱 <span class="count">111</span></a>
+      <a class="nav-link" href="./admin.html">管理</a>
+    </nav>
+    <div class="nav-grow"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>検索…</span><span class="kbd">⌘K</span>
+    </div>
+    <button class="btn btn-icon btn-ghost" aria-label="notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </button>
+    <div class="nav-avatar">AY</div>
+  </header>
+
+  <main class="page-wrap">
+
+    <!-- ===== LEFT: Board ===== -->
+    <section class="board-col">
+
+      <div class="view-bar" style="padding-top: 22px;">
+        <div class="seg">
+          <button class="seg-btn active">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>
+            ボード
+          </button>
+          <button class="seg-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            リスト
+          </button>
+          <button class="seg-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            テーブル
+          </button>
+        </div>
+        <span class="chip">全ステージ ▾</span>
+        <span class="chip">全担当者 ▾</span>
+        <button class="btn btn-secondary btn-sm" style="margin-left: auto;">＋ 新規案件</button>
+      </div>
+
+      <!-- Kanban board: 7 stages, equal columns -->
+      <div class="board">
+        <div class="board-grid">
+
+          <!-- LEAD -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-lead"></span>Lead</div>
+              <div class="meta">97</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">Sony PCL — 配信基盤</div>
+                <div class="prod">Cloud Migration</div>
+                <div class="footer"><span>初回接触 3日</span><span class="who">YK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Hitachi Rail — 信号制御</div>
+                <div class="prod">Edge / Analytics</div>
+                <div class="footer"><span>5日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Sapporo Breweries</div>
+                <div class="prod">需要予測</div>
+                <div class="footer"><span>未対応 9日</span><span class="who">YK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Lawson DX</div>
+                <div class="prod">POS データ統合</div>
+                <div class="footer"><span>11日</span><span class="who">SK</span></div>
+              </div>
+              <div class="see-more">+ 93 件を見る</div>
+            </div>
+          </div>
+
+          <!-- PROPOSAL -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-prop"></span>Proposal</div>
+              <div class="meta">28</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">SoftBank Group — AI 基盤</div>
+                <div class="prod">Foundation Model</div>
+                <div class="footer"><span>提案 7日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Yamaha — POS 刷新</div>
+                <div class="prod">Retail / IoT</div>
+                <div class="footer"><span>2日</span><span class="who">NK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">TEPCO — DX 推進</div>
+                <div class="prod">Data Platform</div>
+                <div class="footer"><span>3日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Pasona — 採用 AI</div>
+                <div class="prod">HR Tech</div>
+                <div class="footer"><span>12日</span><span class="who">SK</span></div>
+              </div>
+              <div class="see-more">+ 24 件を見る</div>
+            </div>
+          </div>
+
+          <!-- NEGOTIATION (selected) -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-neg"></span>Negotiation</div>
+              <div class="meta">12</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard selected">
+                <div class="ct">HISMobile — Gサポ</div>
+                <div class="prod">Mobile Support Platform</div>
+                <div class="footer"><span style="color: oklch(0.4 0.14 25);">最終接触 5日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Mitsubishi — 物流 DX</div>
+                <div class="prod">Logistics Optimization</div>
+                <div class="footer"><span>役員レビュー</span><span class="who">NK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">JR東日本 — 運用支援</div>
+                <div class="prod">Operations Suite</div>
+                <div class="footer"><span>1日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Bridgestone — 工場 IoT</div>
+                <div class="prod">Smart Factory</div>
+                <div class="footer"><span>条件交渉</span><span class="who">YK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">KDDI — エッジ AI</div>
+                <div class="prod">Edge Inference</div>
+                <div class="footer"><span>SLA 確認</span><span class="who">SK</span></div>
+              </div>
+              <div class="see-more">+ 7 件を見る</div>
+            </div>
+          </div>
+
+          <!-- DEVELOPMENT -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-dev"></span>Development</div>
+              <div class="meta">11</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">Toyota Connected</div>
+                <div class="prod">Telemetry Lake</div>
+                <div class="footer"><span>進捗 65%</span><span class="who">YK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">DeNA — レコメンド</div>
+                <div class="prod">ML Pipeline</div>
+                <div class="footer"><span>停止 15日</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">NTT 西日本</div>
+                <div class="prod">Network Ops</div>
+                <div class="footer"><span>進捗 30%</span><span class="who">SK</span></div>
+              </div>
+              <div class="see-more">+ 8 件を見る</div>
+            </div>
+          </div>
+
+          <!-- TESTING -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-test"></span>Testing</div>
+              <div class="meta">14</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">Recruit — 求人 AI</div>
+                <div class="prod">QA Phase</div>
+                <div class="footer"><span>UAT 中</span><span class="who">NK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">Mizuho — 与信</div>
+                <div class="prod">Risk Model</div>
+                <div class="footer"><span>監査中</span><span class="who">AY</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">JAL — 予約最適化</div>
+                <div class="prod">Forecast Engine</div>
+                <div class="footer"><span>負荷試験</span><span class="who">YK</span></div>
+              </div>
+              <div class="see-more">+ 11 件を見る</div>
+            </div>
+          </div>
+
+          <!-- DELIVERY -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-del"></span>Delivery</div>
+              <div class="meta">8</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">Suntory — POS 連携</div>
+                <div class="prod">Retail Sync</div>
+                <div class="footer"><span>納品中</span><span class="who">SK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">SMBC — KYC 自動化</div>
+                <div class="prod">Compliance</div>
+                <div class="footer"><span>本番移行</span><span class="who">AY</span></div>
+              </div>
+              <div class="see-more">+ 6 件を見る</div>
+            </div>
+          </div>
+
+          <!-- MAINTENANCE -->
+          <div class="col">
+            <div class="col-h">
+              <div class="name"><span class="dot dot-main"></span>Maintenance</div>
+              <div class="meta">3</div>
+            </div>
+            <div class="col-cards">
+              <div class="ccard">
+                <div class="ct">Panasonic — 工場監視</div>
+                <div class="prod">Smart Factory</div>
+                <div class="footer"><span>運用 8ヶ月</span><span class="who">NK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">ANA — 整備記録</div>
+                <div class="prod">Asset Track</div>
+                <div class="footer"><span>運用 14ヶ月</span><span class="who">YK</span></div>
+              </div>
+              <div class="ccard">
+                <div class="ct">三井住友海上</div>
+                <div class="prod">Claims AI</div>
+                <div class="footer"><span>運用 6ヶ月</span><span class="who">SK</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== RIGHT: Detail Panel ===== -->
+    <aside class="detail">
+      <div class="det-head">
+        <div class="det-breadcrumb">案件 · Negotiation</div>
+        <h2>HISMobile — Gサポ</h2>
+        <div class="product">Mobile Support Platform · 担当: 中村 大輔 / PM: 佐藤 美咲</div>
+
+        <div class="meta-row">
+          <span>金額<span class="v">¥48.0M</span></span>
+          <span>開始<span class="v">2026/04/02</span></span>
+          <span>最終接触<span class="v">5日前<span class="stale-tag">要連絡</span></span></span>
+        </div>
+
+        <div class="steps">
+          <div class="step done"><div class="bar done"></div><div class="l">Lead</div></div>
+          <div class="step done"><div class="bar done"></div><div class="l">Proposal</div></div>
+          <div class="step current"><div class="bar current"></div><div class="l">Negot.</div></div>
+          <div class="step"><div class="bar"></div><div class="l">Develop</div></div>
+          <div class="step"><div class="bar"></div><div class="l">Testing</div></div>
+          <div class="step"><div class="bar"></div><div class="l">Delivery</div></div>
+          <div class="step"><div class="bar"></div><div class="l">Maint.</div></div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">概要</div>
+        <div class="tab">タイムライン <span class="ct">24</span></div>
+        <div class="tab">VOC <span class="ct">6</span></div>
+        <div class="tab">会議 <span class="ct">7</span></div>
+        <div class="tab">メール <span class="ct">31</span></div>
+        <div class="tab">資料 <span class="ct">9</span></div>
+      </div>
+
+      <div class="det-body">
+
+        <!-- AI 会議ブリーフィング — real product button -->
+        <article class="ai-brief-card">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+          </div>
+          <div class="ll">
+            <div class="l1">AI 会議ブリーフィング</div>
+            <div class="l2">過去 7 件の会議録と VOC を統合した次回打ち合わせ用ブリーフを生成します。</div>
+          </div>
+          <button class="btn btn-primary btn-sm">生成する</button>
+        </article>
+
+        <!-- 現在の状況 -->
+        <section class="det-section">
+          <div class="det-section-h">
+            <span class="l">現在の状況</span>
+            <button class="btn btn-ghost btn-sm">編集</button>
+          </div>
+          <p class="body-text">
+            提案 ¥48M に対し、田中氏 (調達) が 5/15 以降返信なし。同社内決裁ラインは ¥45M との示唆あり。技術側 (吉田氏) は前向き。次回 5/27 のスコープ調整 MTG で再見積もり提示の方向で 5/20 の MTG にて口頭合意済み。
+          </p>
+        </section>
+
+        <!-- 次のアクション -->
+        <section class="det-section">
+          <div class="det-section-h">
+            <span class="l">次のアクション</span>
+            <button class="btn btn-ghost btn-sm">＋ 追加</button>
+          </div>
+          <div class="next-actions">
+            <div class="na-item">
+              <div class="na-check"></div>
+              <div class="na-text">再見積もり PDF (¥42M 案) を送付<span class="when">期限: 5/22</span></div>
+              <span class="na-who">中村</span>
+            </div>
+            <div class="na-item">
+              <div class="na-check"></div>
+              <div class="na-text">追加 2 項目の縮小案を技術と確認<span class="when">期限: 5/24</span></div>
+              <span class="na-who">吉田</span>
+            </div>
+            <div class="na-item">
+              <div class="na-check"></div>
+              <div class="na-text">5/27 スコープ調整 MTG の招集<span class="when">期限: 5/22</span></div>
+              <span class="na-who">中村</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- プロジェクトメモ -->
+        <section class="det-section">
+          <div class="det-section-h">
+            <span class="l">プロジェクトメモ</span>
+            <button class="btn btn-ghost btn-sm">編集</button>
+          </div>
+          <p class="body-text">
+            HISMobile 法人サポート部の刷新案件。既存ベンダー (3 年契約) から SaaS 型への移行を検討中。決裁者は石川本部長 (調達経由)、技術側の最終承認は吉田部長。社内政治: 調達と技術が別組織で温度差あり、価格よりサポート体制を重視する技術側を味方につけられるかが鍵。
+          </p>
+        </section>
+
+        <!-- 主要コンタクト -->
+        <section class="det-section">
+          <div class="det-section-h">
+            <span class="l">主要コンタクト</span>
+            <button class="btn btn-ghost btn-sm">＋ 追加</button>
+          </div>
+          <div class="contacts">
+            <div class="contact-row">
+              <div class="contact-av">TN</div>
+              <div>
+                <div class="contact-name">田中 健一</div>
+                <div class="contact-role">調達部 主任 · 一次窓口</div>
+              </div>
+              <span class="contact-tag dm">DM</span>
+            </div>
+            <div class="contact-row">
+              <div class="contact-av">YS</div>
+              <div>
+                <div class="contact-name">吉田 修</div>
+                <div class="contact-role">技術部 部長 · 技術評価</div>
+              </div>
+              <span class="contact-tag">推進派</span>
+            </div>
+            <div class="contact-row">
+              <div class="contact-av">IS</div>
+              <div>
+                <div class="contact-name">石川 信夫</div>
+                <div class="contact-role">事業本部 本部長 · 決裁者</div>
+              </div>
+              <span class="contact-tag">未接触</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+
+  </main>
+</div>
+</body>
+</html>

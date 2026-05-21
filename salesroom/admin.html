@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理 — SalesRoom</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Admin page ===== */
+  .admin-shell { padding: 0; max-width: 1280px; margin: 0 auto; }
+
+  /* ---------- Top health strip ---------- */
+  .health {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-warm);
+    padding: 0 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .health-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 22px 11px 0;
+    margin-right: 22px;
+    border-right: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .health-cell:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+  .health-cell .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .health-cell .dot.danger { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-tint); }
+  .health-cell .dot.warn   { background: var(--warn);   box-shadow: 0 0 0 3px var(--warn-tint); }
+  .health-cell .dot.ok     { background: var(--success); box-shadow: 0 0 0 3px var(--success-tint); }
+  .health-cell .dot.idle   { background: var(--ink-3); box-shadow: 0 0 0 3px var(--canvas-sunk); }
+  .health-cell .l {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  .health-cell .v { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .health-cell .v.danger { color: var(--danger); }
+  .health-cell .sep { color: var(--ink-3); padding: 0 4px; }
+  .health-cell a {
+    color: var(--ink-2);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--line-strong);
+  }
+  .health-cell a:hover { color: var(--ember); border-bottom-color: var(--ember); }
+
+  /* ---------- Page header ---------- */
+  .admin-head {
+    padding: 28px 28px 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .admin-head h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
+    margin: 0 0 4px;
+  }
+  .admin-head .sub {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .admin-head .actions { display: flex; gap: 8px; }
+
+  /* ---------- Tab bar ---------- */
+  .tab-bar {
+    padding: 20px 28px 0;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    border: none;
+    background: transparent;
+    padding: 11px 16px 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color 120ms var(--ease-out);
+  }
+  .tab-btn:hover { color: var(--ink-2); }
+  .tab-btn.active {
+    color: var(--ink);
+    font-weight: 600;
+    border-bottom-color: var(--ember);
+  }
+  .tab-btn .count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    background: var(--canvas-sunk);
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tab-btn.active .count { background: var(--ember-tint); color: var(--ember-ink); }
+  .tab-btn .ic { width: 14px; height: 14px; }
+  .tab-btn .ic.danger { color: var(--danger); }
+
+  /* ---------- Panel ---------- */
+  .admin-panel { padding: 24px 28px 56px; display: none; }
+  .admin-panel.active { display: block; }
+
+  /* =========================================================================
+     Tab 1 — メンバー
+     ========================================================================= */
+  .mem-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .mem-search {
+    flex: 1;
+    max-width: 360px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+  .mem-search:focus-within { border-color: var(--ink-2); }
+  .mem-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: var(--ink);
+  }
+  .mem-search input::placeholder { color: var(--ink-3); }
+  .mem-filter-chips { display: flex; gap: 6px; margin-left: auto; }
+  .mem-filter-chips .chip { font-size: 11.5px; padding: 4px 10px; }
+
+  .mem-section { margin-bottom: 22px; }
+  .mem-section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 0 4px 8px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mem-section-head h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: -0.015em;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .mem-section-head .ct {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-left: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .mem-list {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .mem-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 80px 1.6fr 100px;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 100ms var(--ease-out);
+  }
+  .mem-row:last-child { border-bottom: none; }
+  .mem-row:hover { background: var(--surface-warm); }
+  .mem-row .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+  .mem-row .avatar.a { background: oklch(0.94 0.045 55); color: var(--ember-ink); }
+  .mem-row .avatar.b { background: oklch(0.94 0.04 330); color: var(--plum-ink); }
+  .mem-row .avatar.c { background: oklch(0.96 0.04 85); color: var(--honey-ink); }
+  .mem-row .avatar.d { background: oklch(0.94 0.04 155); color: oklch(0.32 0.10 155); }
+  .mem-row .avatar.e { background: oklch(0.93 0.03 240); color: oklch(0.35 0.10 240); }
+  .mem-row .who .name { font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+  .mem-row .who .handle { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3); margin-top: 1px; }
+  .mem-row .role-pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: 700;
+    text-align: center;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+  }
+  .mem-row .role-pill.admin { background: var(--ember-tint); color: var(--ember-ink); }
+  .mem-row .email {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mem-row .row-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 120ms var(--ease-out);
+  }
+  .mem-row:hover .row-actions { opacity: 1; }
+  .mem-row .row-actions .btn-icon { padding: 6px; color: var(--ink-3); }
+  .mem-row .row-actions .btn-icon:hover { color: var(--ink); background: var(--canvas-sunk); border-radius: 6px; }
+
+  /* =========================================================================
+     Tab 2 — 定時任務 (Cron)
+     ========================================================================= */
+  .cron-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .cron-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    position: relative;
+  }
+  .cron-card.error {
+    border-color: oklch(0.62 0.18 25 / 0.30);
+    background: linear-gradient(180deg, oklch(0.99 0.012 30), var(--surface) 50%);
+  }
+  .cron-card .row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .cron-card .row-head .name {
+    font-family: var(--font-display);
+    font-size: 19px;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+  .cron-card .row-head .status-pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+  }
+  .cron-card .row-head .status-pill.error { background: var(--danger-tint); color: var(--danger); }
+  .cron-card .row-head .status-pill .dot { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+  .cron-card .meta-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 14px;
+    font-size: 12px;
+  }
+  .cron-card .meta-grid dt {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    align-self: center;
+  }
+  .cron-card .meta-grid dd {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    align-self: center;
+  }
+  .cron-card .actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Cron table */
+  .cron-history-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .cron-history-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-warm);
+  }
+  .cron-history-head h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin: 0;
+    letter-spacing: -0.015em;
+  }
+  .cron-history-head .chips { display: flex; gap: 5px; margin-left: auto; }
+  .cron-history-head .chip { font-size: 11px; padding: 3px 9px; }
+
+  /* =========================================================================
+     Shared table style (cron + exec history)
+     ========================================================================= */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .data-table thead th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--ink-3);
+    text-align: left;
+    padding: 9px 14px;
+    background: var(--surface-warm);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .data-table tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: var(--surface-warm); }
+  .data-table .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .data-table .ink { color: var(--ink); }
+  .data-table .status-cell { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11.5px; }
+  .data-table .status-cell .dot { width: 6px; height: 6px; border-radius: 999px; }
+  .data-table .status-cell.ok { color: oklch(0.40 0.12 155); }
+  .data-table .status-cell.ok .dot { background: var(--success); }
+  .data-table .status-cell.fail { color: var(--danger); }
+  .data-table .status-cell.fail .dot { background: var(--danger); }
+  .data-table .status-cell.skip { color: var(--ink-3); }
+  .data-table .status-cell.skip .dot { background: var(--ink-3); }
+  .data-table .err {
+    max-width: 380px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--danger);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    cursor: help;
+  }
+  .data-table .pipe-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .data-table .pipe-tag.briefing { background: var(--ember-tint); color: var(--ember-ink); }
+  .data-table .pipe-tag.email   { background: var(--plum-tint);  color: var(--plum-ink); }
+  .data-table .pipe-tag.meeting { background: var(--honey-tint); color: var(--honey-ink); }
+  .data-table .pipe-tag.pre     { background: oklch(0.95 0.03 240); color: oklch(0.36 0.10 240); }
+
+  /* =========================================================================
+     Tab 3 — 実行履歴
+     ========================================================================= */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 14px;
+  }
+  .kpi .l {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .kpi .v {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi.danger .v { color: var(--danger); }
+  .kpi.success .v { color: oklch(0.40 0.12 155); }
+  .kpi.warn .v { color: oklch(0.45 0.13 70); }
+  .kpi.idle .v { color: var(--ink-3); }
+  .kpi .delta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 4px;
+  }
+
+  .exec-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .exec-filter-row .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-right: 4px;
+  }
+  .exec-filter-row .chip { font-size: 11.5px; padding: 4px 10px; }
+  .exec-filter-row .right {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .exec-filter-row .right .toggle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .exec-table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  /* =========================================================================
+     Tab 4 — システム
+     ========================================================================= */
+  .sys-section { margin-bottom: 28px; }
+  .sys-section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 0 4px 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sys-section-head h2 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: -0.015em;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .sys-section-head .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sys-section-head .auto-refresh {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .sys-section-head .auto-refresh .toggle {
+    width: 28px;
+    height: 16px;
+    background: var(--ember);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+  }
+  .sys-section-head .auto-refresh .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: var(--on-ember);
+    border-radius: 999px;
+  }
+
+  .host-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-bottom: 14px;
+  }
+  .host-bar .badge { font-family: var(--font-mono); }
+  .host-bar .seg {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding-right: 12px;
+    margin-right: 12px;
+    border-right: 1px solid var(--line);
+  }
+  .host-bar .seg:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+  .host-bar .seg .l {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .host-bar .seg .v { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .res-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 14px;
+  }
+  .res-card .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .res-card .head .name {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 700;
+  }
+  .res-card .head .sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  .res-card .head svg { width: 14px; height: 14px; color: var(--ink-3); }
+  .res-card .v {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .res-card .v .unit { font-size: 14px; color: var(--ink-3); font-family: var(--font-mono); letter-spacing: 0; margin-left: 2px; }
+  .res-card .bar {
+    height: 4px;
+    background: var(--canvas-sunk);
+    border-radius: 999px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .res-card .bar .fill {
+    height: 100%;
+    background: var(--ink-2);
+    border-radius: 999px;
+  }
+  .res-card.idle .v { color: var(--ink-3); }
+
+  /* LLM zone — only place ember is used on this page beyond accents */
+  .llm-zone {
+    background: linear-gradient(180deg, var(--ember-tint) 0%, var(--surface) 60%);
+    border: 1px solid oklch(0.72 0.16 45 / 0.22);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+  }
+  .llm-zone .zone-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .llm-zone .zone-head .ic {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--ember);
+    color: var(--on-ember);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 1px 2px oklch(0.55 0.16 35 / 0.30);
+  }
+  .llm-zone .zone-head h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin: 0;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+  .llm-zone .zone-head .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ember-ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .preset-btn {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid oklch(0.72 0.16 45 / 0.30);
+    color: var(--ember-ink);
+    cursor: pointer;
+    transition: all 120ms var(--ease-out);
+  }
+  .preset-btn:hover { background: oklch(0.97 0.04 55); }
+  .preset-btn.active { background: var(--ember); color: var(--on-ember); border-color: transparent; box-shadow: 0 1px 2px oklch(0.55 0.16 35 / 0.30); }
+  .preset-row .lbl {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ember-ink);
+    align-self: center;
+    margin-right: 6px;
+    font-weight: 700;
+  }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .slot {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .slot .role {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ember-ink);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .slot .purpose {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 12px;
+  }
+  .slot .selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    background: var(--canvas-sunk);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+  }
+  .slot .selector:hover { border-color: oklch(0.72 0.16 45 / 0.30); }
+  .slot .selector svg { color: var(--ink-3); flex-shrink: 0; }
+
+  /* Ollama row */
+  .ollama-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ollama-row .ic {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--canvas-sunk);
+    color: var(--ink-3);
+    display: grid;
+    place-items: center;
+  }
+  .ollama-row .info { flex: 1; }
+  .ollama-row .info .name { font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .ollama-row .info .msg { font-size: 12px; color: var(--ink-3); }
+  .ollama-row .status-pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-weight: 700;
+    background: var(--canvas-sunk);
+    color: var(--ink-3);
+  }
+
+  /* Concurrency slots */
+  .conc-zone {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .conc-zone .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .conc-zone .head h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin: 0;
+    letter-spacing: -0.015em;
+  }
+  .conc-zone .head .sub { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+  .conc-zone .head .v {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .conc-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .conc-slot {
+    background: var(--canvas-sunk);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .conc-slot .n {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-3);
+    width: 36px;
+  }
+  .conc-slot .state {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .conc-slot .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--ink-3);
+    opacity: 0.5;
+    margin-left: auto;
+  }
+  .conc-slot.busy .dot { background: var(--success); opacity: 1; box-shadow: 0 0 0 3px var(--success-tint); }
+  .conc-slot.busy .state { color: var(--success); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="nav">
+    <a class="nav-brand" href="./index.html"><span class="nav-mark">SR</span><span class="nav-name">SalesRoom</span></a>
+    <nav class="nav-links">
+      <a class="nav-link" href="./home.html">ホーム</a>
+      <a class="nav-link" href="./pipeline.html">案件 <span class="count">255</span></a>
+      <a class="nav-link" href="./customers.html">顧客 <span class="count">220</span></a>
+      <a class="nav-link" href="./inbox.html">受信箱 <span class="count">111</span></a>
+      <a class="nav-link active" href="./admin.html">管理</a>
+    </nav>
+    <div class="nav-grow"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>検索…</span><span class="kbd">⌘K</span>
+    </div>
+    <button class="btn btn-icon btn-ghost" aria-label="notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </button>
+    <div class="nav-avatar">AD</div>
+  </header>
+
+  <!-- ============================================================
+       Top health strip — admin sees system health on entry
+       ============================================================ -->
+  <div class="health">
+    <div class="health-cell">
+      <span class="dot danger"></span>
+      <span class="l">CRON</span>
+      <span class="v danger">3 失敗</span>
+      <span class="sep">/</span>
+      <span>3 タスク</span>
+    </div>
+    <div class="health-cell">
+      <span class="dot warn"></span>
+      <span class="l">パイプライン 24h</span>
+      <span class="v">88 実行</span>
+      <span class="sep">/</span>
+      <span>81 成功 · <span style="color: var(--danger);">4 失敗</span> · 3 スキップ</span>
+    </div>
+    <div class="health-cell">
+      <span class="dot ok"></span>
+      <span class="l">ホスト</span>
+      <span class="v">稼働 172.1h</span>
+      <span class="sep">/</span>
+      <span>CPU 0.0% · MEM 12.1%</span>
+    </div>
+    <div class="health-cell">
+      <span class="dot idle"></span>
+      <span class="l">LLM</span>
+      <span class="v">3 並行</span>
+      <span class="sep">/</span>
+      <span>0 稼働</span>
+    </div>
+    <div class="health-cell" style="margin-left: auto;">
+      <span class="l">最終更新</span>
+      <span class="v">14:32:08</span>
+    </div>
+  </div>
+
+  <div class="admin-shell">
+
+    <!-- Tabs -->
+    <div class="tab-bar" role="tablist" style="padding-top: 24px; align-items: center;">
+      <button class="tab-btn active" data-tab="members" role="tab">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        メンバー <span class="count">47</span>
+      </button>
+      <button class="tab-btn" data-tab="cron" role="tab">
+        <svg class="ic danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        定時任務 <span class="count">3</span>
+      </button>
+      <button class="tab-btn" data-tab="exec" role="tab">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        実行履歴 <span class="count">88</span>
+      </button>
+      <button class="tab-btn" data-tab="system" role="tab">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        システム
+      </button>
+      <div style="margin-left: auto; display: flex; gap: 8px; align-self: center;">
+        <button class="btn btn-ghost btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          再読込
+        </button>
+        <button class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          詳細設定
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Panel 1 — メンバー (default)
+         ============================================================ -->
+    <section class="admin-panel active" data-panel="members">
+      <div class="mem-toolbar">
+        <div class="mem-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="名前・@ハンドル・メールで検索…">
+        </div>
+        <div class="mem-filter-chips">
+          <button class="chip active">すべて <span class="count">47</span></button>
+          <button class="chip">admin <span class="count">5</span></button>
+          <button class="chip">member <span class="count">42</span></button>
+        </div>
+        <button class="btn btn-primary btn-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          メンバー追加
+        </button>
+      </div>
+
+      <!-- Admin section -->
+      <div class="mem-section">
+        <div class="mem-section-head">
+          <h3>管理者</h3>
+          <span class="badge">ADMIN</span>
+          <span class="ct">5 名</span>
+        </div>
+        <div class="mem-list">
+          <div class="mem-row">
+            <div class="avatar a">AD</div>
+            <div class="who"><div class="name">Alex Diao</div><div class="handle">@alex</div></div>
+            <div class="role-pill admin">admin</div>
+            <div class="email">alex@gbase.ai</div>
+            <div class="row-actions">
+              <button class="btn-icon" aria-label="編集"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button>
+            </div>
+          </div>
+          <div class="mem-row">
+            <div class="avatar b">SK</div>
+            <div class="who"><div class="name">佐藤 健一</div><div class="handle">@sato.kenichi</div></div>
+            <div class="role-pill admin">admin</div>
+            <div class="email">sato.kenichi@gbase.ai</div>
+            <div class="row-actions"><button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button></div>
+          </div>
+          <div class="mem-row">
+            <div class="avatar c">MN</div>
+            <div class="who"><div class="name">中村 美咲</div><div class="handle">@nakamura.misaki</div></div>
+            <div class="role-pill admin">admin</div>
+            <div class="email">nakamura.m@gbase.ai</div>
+            <div class="row-actions"><button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button></div>
+          </div>
+          <div class="mem-row">
+            <div class="avatar d">HW</div>
+            <div class="who"><div class="name">Wang Hao</div><div class="handle">@admin</div></div>
+            <div class="role-pill admin">admin</div>
+            <div class="email">admin@gbase.ai</div>
+            <div class="row-actions"><button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button></div>
+          </div>
+          <div class="mem-row">
+            <div class="avatar e">TY</div>
+            <div class="who"><div class="name">高橋 由香</div><div class="handle">@takahashi.yuka</div></div>
+            <div class="role-pill admin">admin</div>
+            <div class="email">takahashi.y@gbase.ai</div>
+            <div class="row-actions"><button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member section -->
+      <div class="mem-section">
+        <div class="mem-section-head">
+          <h3>メンバー</h3>
+          <span class="badge neutral">MEMBER</span>
+          <span class="ct">42 名 · 全 47</span>
+        </div>
+        <div class="mem-list" id="member-list">
+          <!-- 42 members rendered here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Panel 2 — 定時任務
+         ============================================================ -->
+    <section class="admin-panel" data-panel="cron">
+      <div class="cron-cards">
+        <div class="cron-card error">
+          <div class="row-head">
+            <h3 class="name">メール取得</h3>
+            <span class="status-pill error"><span class="dot"></span>ERROR</span>
+          </div>
+          <dl class="meta-grid">
+            <dt>間隔</dt><dd>30 分</dd>
+            <dt>最終実行</dt><dd>28 分前</dd>
+            <dt>次回</dt><dd>2 分後</dd>
+            <dt>連続失敗</dt><dd style="color: var(--danger);">4 回</dd>
+          </dl>
+          <div class="actions">
+            <button class="btn btn-secondary btn-sm">今すぐ実行</button>
+            <button class="btn btn-ghost btn-sm">設定</button>
+          </div>
+        </div>
+
+        <div class="cron-card error">
+          <div class="row-head">
+            <h3 class="name">日历リフレッシュ</h3>
+            <span class="status-pill error"><span class="dot"></span>ERROR</span>
+          </div>
+          <dl class="meta-grid">
+            <dt>間隔</dt><dd>1 時間</dd>
+            <dt>最終実行</dt><dd>56 分前</dd>
+            <dt>次回</dt><dd>4 分後</dd>
+            <dt>連続失敗</dt><dd style="color: var(--danger);">4 回</dd>
+          </dl>
+          <div class="actions">
+            <button class="btn btn-secondary btn-sm">今すぐ実行</button>
+            <button class="btn btn-ghost btn-sm">設定</button>
+          </div>
+        </div>
+
+        <div class="cron-card error">
+          <div class="row-head">
+            <h3 class="name">会議取得</h3>
+            <span class="status-pill error"><span class="dot"></span>ERROR</span>
+          </div>
+          <dl class="meta-grid">
+            <dt>間隔</dt><dd>1 時間</dd>
+            <dt>最終実行</dt><dd>53 分前</dd>
+            <dt>次回</dt><dd>7 分後</dd>
+            <dt>連続失敗</dt><dd style="color: var(--danger);">4 回</dd>
+          </dl>
+          <div class="actions">
+            <button class="btn btn-secondary btn-sm">今すぐ実行</button>
+            <button class="btn btn-ghost btn-sm">設定</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cron-history-wrap">
+        <div class="cron-history-head">
+          <h3>実行履歴</h3>
+          <div class="chips">
+            <button class="chip active">全て <span class="count">36</span></button>
+            <button class="chip">メール取得 <span class="count">12</span></button>
+            <button class="chip">日历リフレッシュ <span class="count">12</span></button>
+            <button class="chip">会議取得 <span class="count">12</span></button>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>時刻</th>
+              <th>種類</th>
+              <th>所要</th>
+              <th>取得数</th>
+              <th>状態</th>
+              <th>エラー</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">14:30:00</td><td class="ink">メール取得</td><td class="mono">0.12s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">14:24:01</td><td class="ink">会議取得</td><td class="mono">0.10s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">14:22:14</td><td class="ink">日历リフレッシュ</td><td class="mono">0.11s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">14:00:00</td><td class="ink">メール取得</td><td class="mono">0.13s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">13:30:00</td><td class="ink">メール取得</td><td class="mono">0.12s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">13:24:01</td><td class="ink">会議取得</td><td class="mono">0.09s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">13:22:14</td><td class="ink">日历リフレッシュ</td><td class="mono">0.10s</td><td class="mono">—</td><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td class="err" title="Error response from daemon: No such container: spark-openclaw-salesroom-1">Error response from daemon: No such container: spark-openclaw-salesroom-1</td></tr>
+            <tr><td class="mono">13:00:00</td><td class="ink">メール取得</td><td class="mono">12.3s</td><td class="mono ink">+8</td><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td class="err" style="color: var(--ink-3);">—</td></tr>
+            <tr><td class="mono">12:30:00</td><td class="ink">メール取得</td><td class="mono">9.4s</td><td class="mono ink">+3</td><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td class="err" style="color: var(--ink-3);">—</td></tr>
+            <tr><td class="mono">12:24:01</td><td class="ink">会議取得</td><td class="mono">22.1s</td><td class="mono ink">+1</td><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td class="err" style="color: var(--ink-3);">—</td></tr>
+            <tr><td class="mono">12:22:14</td><td class="ink">日历リフレッシュ</td><td class="mono">3.7s</td><td class="mono ink">+12</td><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td class="err" style="color: var(--ink-3);">—</td></tr>
+            <tr><td class="mono">12:00:00</td><td class="ink">メール取得</td><td class="mono">11.0s</td><td class="mono ink">+5</td><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td class="err" style="color: var(--ink-3);">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Panel 3 — 実行履歴
+         ============================================================ -->
+    <section class="admin-panel" data-panel="exec">
+      <div class="kpi-row">
+        <div class="kpi"><div class="l">過去 24 時間</div><div class="v">88</div><div class="delta">実行回数</div></div>
+        <div class="kpi success"><div class="l">成功</div><div class="v">81</div><div class="delta">92.0%</div></div>
+        <div class="kpi danger"><div class="l">失敗</div><div class="v">4</div><div class="delta">4.5%</div></div>
+        <div class="kpi warn"><div class="l">スキップ</div><div class="v">3</div><div class="delta">3.4%</div></div>
+        <div class="kpi idle"><div class="l">実行中</div><div class="v">0</div><div class="delta">—</div></div>
+      </div>
+
+      <div class="exec-filter-row">
+        <span class="label">状態</span>
+        <button class="chip active">全て <span class="count">88</span></button>
+        <button class="chip">成功のみ <span class="count">81</span></button>
+        <button class="chip">失敗のみ <span class="count">4</span></button>
+        <button class="chip">スキップのみ <span class="count">3</span></button>
+        <button class="chip">実行中のみ <span class="count">0</span></button>
+      </div>
+      <div class="exec-filter-row">
+        <span class="label">パイプライン</span>
+        <button class="chip active">全て</button>
+        <button class="chip"><code class="mono" style="font-size: 11px;">daily-briefing</code> <span class="count">24</span></button>
+        <button class="chip"><code class="mono" style="font-size: 11px;">post-email-pipeline</code> <span class="count">31</span></button>
+        <button class="chip"><code class="mono" style="font-size: 11px;">post-meeting-pipeline</code> <span class="count">18</span></button>
+        <button class="chip"><code class="mono" style="font-size: 11px;">pre-meeting-pipeline</code> <span class="count">15</span></button>
+        <div class="right">
+          <span class="toggle">100 件表示</span>
+          <button class="btn btn-ghost btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            更新
+          </button>
+        </div>
+      </div>
+
+      <div class="exec-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>状態</th>
+              <th>パイプライン</th>
+              <th>トリガー</th>
+              <th>所要</th>
+              <th>備考</th>
+              <th>時刻</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2241</td><td class="mono">4.8s</td><td class="mono" style="color: var(--ink-3);">routed → 21 件</td><td class="mono">14:31:08</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag meeting">post-meeting-pipeline</span></td><td class="mono">cron · meeting-518</td><td class="mono">12.4s</td><td class="mono" style="color: var(--ink-3);">summary OK</td><td class="mono">14:24:51</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag pre">pre-meeting-pipeline</span></td><td class="mono">cron · meeting-519</td><td class="mono">7.2s</td><td class="mono" style="color: var(--ink-3);">briefing OK</td><td class="mono">14:18:14</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag briefing">daily-briefing</span></td><td class="mono">cron · 09:00</td><td class="mono">38.1s</td><td class="mono" style="color: var(--ink-3);">47 / 47 配信</td><td class="mono">14:01:42</td></tr>
+            <tr><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2240</td><td class="mono">0.4s</td><td class="err" title="LLM timeout after 30s (glm-5.1 / fast slot)">LLM timeout after 30s (glm-5.1 / fast slot)</td><td class="mono">13:55:30</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2239</td><td class="mono">5.1s</td><td class="mono" style="color: var(--ink-3);">routed → 18 件</td><td class="mono">13:48:11</td></tr>
+            <tr><td><span class="status-cell skip"><span class="dot"></span>スキップ</span></td><td><span class="pipe-tag meeting">post-meeting-pipeline</span></td><td class="mono">cron · meeting-517</td><td class="mono">—</td><td class="mono" style="color: var(--ink-3);">既に処理済み</td><td class="mono">13:24:08</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag pre">pre-meeting-pipeline</span></td><td class="mono">cron · meeting-518</td><td class="mono">6.9s</td><td class="mono" style="color: var(--ink-3);">briefing OK</td><td class="mono">13:18:01</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2238</td><td class="mono">4.4s</td><td class="mono" style="color: var(--ink-3);">routed → 23 件</td><td class="mono">13:01:09</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag meeting">post-meeting-pipeline</span></td><td class="mono">cron · meeting-516</td><td class="mono">11.8s</td><td class="mono" style="color: var(--ink-3);">summary OK</td><td class="mono">12:24:34</td></tr>
+            <tr><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td><span class="pipe-tag pre">pre-meeting-pipeline</span></td><td class="mono">manual · @sato</td><td class="mono">0.2s</td><td class="err" title="No such project: HISMobile_Phase4 (renamed to HISMobile_Gサポ)">No such project: HISMobile_Phase4 (renamed)</td><td class="mono">12:11:48</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2237</td><td class="mono">5.0s</td><td class="mono" style="color: var(--ink-3);">routed → 19 件</td><td class="mono">12:01:11</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag meeting">post-meeting-pipeline</span></td><td class="mono">cron · meeting-515</td><td class="mono">14.2s</td><td class="mono" style="color: var(--ink-3);">summary OK</td><td class="mono">11:24:18</td></tr>
+            <tr><td><span class="status-cell skip"><span class="dot"></span>スキップ</span></td><td><span class="pipe-tag briefing">daily-briefing</span></td><td class="mono">manual · @admin</td><td class="mono">—</td><td class="mono" style="color: var(--ink-3);">既に当日配信済み</td><td class="mono">11:12:00</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2236</td><td class="mono">4.7s</td><td class="mono" style="color: var(--ink-3);">routed → 16 件</td><td class="mono">11:01:09</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag pre">pre-meeting-pipeline</span></td><td class="mono">cron · meeting-517</td><td class="mono">8.0s</td><td class="mono" style="color: var(--ink-3);">briefing OK</td><td class="mono">10:18:55</td></tr>
+            <tr><td><span class="status-cell fail"><span class="dot"></span>失敗</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2235</td><td class="mono">0.4s</td><td class="err" title="LLM timeout after 30s (glm-5.1 / fast slot)">LLM timeout after 30s (glm-5.1 / fast slot)</td><td class="mono">10:01:09</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag briefing">daily-briefing</span></td><td class="mono">cron · 09:00</td><td class="mono">36.4s</td><td class="mono" style="color: var(--ink-3);">47 / 47 配信</td><td class="mono">09:00:18</td></tr>
+            <tr><td><span class="status-cell skip"><span class="dot"></span>スキップ</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2234</td><td class="mono">—</td><td class="mono" style="color: var(--ink-3);">空 inbox</td><td class="mono">08:31:01</td></tr>
+            <tr><td><span class="status-cell ok"><span class="dot"></span>成功</span></td><td><span class="pipe-tag email">post-email-pipeline</span></td><td class="mono">cron · email-2233</td><td class="mono">3.9s</td><td class="mono" style="color: var(--ink-3);">routed → 9 件</td><td class="mono">08:01:08</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Panel 4 — システム
+         ============================================================ -->
+    <section class="admin-panel" data-panel="system">
+
+      <!-- Host bar -->
+      <div class="host-bar">
+        <span class="seg">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="l">HOST</span> <span class="v">IntentionalVariable-VM</span>
+        </span>
+        <span class="seg"><span class="l">OS</span> <span class="v">linux</span></span>
+        <span class="seg"><span class="l">稼働</span> <span class="v">172.1h</span></span>
+        <span class="seg"><span class="l">PID</span> <span class="v">23841</span></span>
+        <span class="seg"><span class="l">バージョン</span> <span class="v">v2026.05.18</span></span>
+        <span class="seg" style="margin-left: auto;">
+          <span class="badge success"><span class="dot"></span>稼働中</span>
+        </span>
+      </div>
+
+      <!-- Section: hardware -->
+      <div class="sys-section">
+        <div class="sys-section-head">
+          <h2>ハードウェア</h2>
+          <span class="sub">物理リソース · 10s 自動更新</span>
+          <div class="auto-refresh">自動更新 <span class="toggle" aria-label="自動更新オン"></span> 10s</div>
+        </div>
+        <div class="res-grid">
+          <div class="res-card">
+            <div class="head"><span class="name">CPU</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></svg></div>
+            <div class="v">0.0<span class="unit">%</span></div>
+            <div class="bar"><div class="fill" style="width: 1%; background: var(--success);"></div></div>
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); margin-top: 6px;">4 cores</div>
+          </div>
+          <div class="res-card">
+            <div class="head"><span class="name">メモリ</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+            <div class="v">12.1<span class="unit">%</span></div>
+            <div class="bar"><div class="fill" style="width: 12.1%; background: var(--success);"></div></div>
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); margin-top: 6px;">0.94 / 7.8 GB</div>
+          </div>
+          <div class="res-card">
+            <div class="head"><span class="name">ディスク</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+            <div class="v">5<span class="unit">%</span></div>
+            <div class="bar"><div class="fill" style="width: 5%; background: var(--success);"></div></div>
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); margin-top: 6px;">9.6 / 192.8 GB</div>
+          </div>
+          <div class="res-card idle">
+            <div class="head"><span class="name">GPU</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h2"/><path d="M11 10h2"/><circle cx="18" cy="12" r="2"/></svg></div>
+            <div class="v" style="font-size: 18px; padding-top: 6px;">未検出</div>
+            <div class="bar"><div class="fill" style="width: 0%;"></div></div>
+            <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3); margin-top: 6px;">CUDA / Metal なし</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LLM zone (ember-tinted) -->
+      <div class="llm-zone sys-section">
+        <div class="zone-head">
+          <div class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c0-5.52 4.48-10 10-10"/><path d="M22 2 12 12"/><path d="M9.94 14.06 2 22"/></svg>
+          </div>
+          <div>
+            <h2>モデル設定</h2>
+            <div class="sub">AI 機能が使用する LLM の割り当て</div>
+          </div>
+        </div>
+
+        <div class="preset-row">
+          <span class="lbl">プリセット</span>
+          <button class="preset-btn active">Mix</button>
+          <button class="preset-btn">Qwen 3.5</button>
+          <button class="preset-btn">Gemma 4</button>
+          <button class="preset-btn">カスタム</button>
+        </div>
+
+        <div class="slot-grid">
+          <div class="slot">
+            <div class="role">FAST</div>
+            <div class="purpose">分類 · 抽出 · 短文要約</div>
+            <button class="selector">
+              <span>glm-5.1</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <div class="slot">
+            <div class="role">LARGE</div>
+            <div class="purpose">分析 · 生成 · 長文要約</div>
+            <button class="selector">
+              <span>glm-5.1</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+          <div class="slot">
+            <div class="role">VISION</div>
+            <div class="purpose">画像認識 · OCR</div>
+            <button class="selector">
+              <span>glm-5.1</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="ollama-row">
+            <div class="ic">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            </div>
+            <div class="info">
+              <div class="name">Ollama (ローカルモデル)</div>
+              <div class="msg">Ollama に接続できません · localhost:11434</div>
+            </div>
+            <span class="status-pill">停止</span>
+            <button class="btn btn-ghost btn-sm">再接続</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Concurrency -->
+      <div class="conc-zone sys-section">
+        <div class="head">
+          <div>
+            <h3>LLM 並行制御</h3>
+            <div class="sub">同時実行可能なリクエスト数</div>
+          </div>
+          <div class="v">最大 3 並行 · 0 稼働</div>
+        </div>
+        <div class="conc-slots">
+          <div class="conc-slot"><span class="n">Slot 0</span><span class="state">空き</span><span class="dot"></span></div>
+          <div class="conc-slot"><span class="n">Slot 1</span><span class="state">空き</span><span class="dot"></span></div>
+          <div class="conc-slot"><span class="n">Slot 2</span><span class="state">空き</span><span class="dot"></span></div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+<script>
+  // ----- Member list rendering (42 members beyond the 5 admins) -----
+  const MEMBERS = [
+    ['DT', 'a', '田中 大輔',     '@tanaka.daisuke',      'tanaka.d@gbase.ai'],
+    ['SR', 'b', '鈴木 涼',       '@suzuki.ryo',          'suzuki.r@gbase.ai'],
+    ['IK', 'c', '伊藤 健太',     '@ito.kenta',           'ito.k@gbase.ai'],
+    ['YA', 'd', '山田 彩',       '@yamada.aya',          'yamada.a@gbase.ai'],
+    ['WS', 'e', '渡邊 翔',       '@watanabe.sho',        'watanabe.s@gbase.ai'],
+    ['KM', 'a', '小林 真奈',     '@kobayashi.mana',      'kobayashi.m@gbase.ai'],
+    ['MS', 'b', '松本 慎一',     '@matsumoto.shinichi',  'matsumoto.s@gbase.ai'],
+    ['IY', 'c', '井上 由衣',     '@inoue.yui',           'inoue.y@gbase.ai'],
+    ['KR', 'd', '加藤 涼子',     '@kato.ryoko',          'kato.r@gbase.ai'],
+    ['YH', 'e', '吉田 春樹',     '@yoshida.haruki',      'yoshida.h@gbase.ai'],
+    ['LM', 'a', 'Liu Ming',      '@liu.ming',            'liu.m@gbase.ai'],
+    ['HK', 'b', '橋本 美和',     '@hashimoto.miwa',      'hashimoto.m@gbase.ai'],
+    ['OK', 'c', '大塚 啓',       '@otsuka.kei',          'otsuka.k@gbase.ai'],
+    ['KN', 'd', '木村 直美',     '@kimura.naomi',        'kimura.n@gbase.ai'],
+    ['MA', 'e', '森 朝陽',       '@mori.asahi',          'mori.a@gbase.ai'],
+    ['HJ', 'a', 'Park Jisoo',    '@park.jisoo',          'park.j@gbase.ai'],
+    ['AY', 'b', '青木 雄太',     '@aoki.yuta',           'aoki.y@gbase.ai'],
+    ['SN', 'c', '清水 直',       '@shimizu.nao',         'shimizu.n@gbase.ai'],
+    ['HM', 'd', '原 美咲',       '@hara.misaki',         'hara.m@gbase.ai'],
+    ['KS', 'e', '川口 翔太',     '@kawaguchi.shota',     'kawaguchi.s@gbase.ai'],
+    ['NW', 'a', '西 渉',         '@nishi.wataru',        'nishi.w@gbase.ai'],
+    ['AT', 'b', '安藤 智子',     '@ando.tomoko',         'ando.t@gbase.ai'],
+    ['IS', 'c', '石田 颯',       '@ishida.so',           'ishida.s@gbase.ai'],
+    ['KK', 'd', 'Kim Kyung-hee', '@kim.kh',              'kim.kh@gbase.ai'],
+    ['FY', 'e', '藤田 結衣',     '@fujita.yui',          'fujita.y@gbase.ai'],
+    ['OS', 'a', '岡田 さくら',   '@okada.sakura',        'okada.s@gbase.ai'],
+    ['MK', 'b', '前田 蓮',       '@maeda.ren',           'maeda.r@gbase.ai'],
+    ['HS', 'c', '長谷川 颯太',   '@hasegawa.sota',       'hasegawa.s@gbase.ai'],
+    ['CH', 'd', 'Chen Hui',      '@chen.hui',            'chen.h@gbase.ai'],
+    ['UK', 'e', '内田 京子',     '@uchida.kyoko',        'uchida.k@gbase.ai'],
+    ['MM', 'a', '三浦 真',       '@miura.makoto',        'miura.m@gbase.ai'],
+    ['SS', 'b', '島田 翔子',     '@shimada.shoko',       'shimada.s@gbase.ai'],
+    ['GE', 'c', '後藤 詠美',     '@goto.emi',            'goto.e@gbase.ai'],
+    ['EH', 'd', '遠藤 陽',       '@endo.haru',           'endo.h@gbase.ai'],
+    ['KZ', 'e', '岸田 善之',     '@kishida.yoshiyuki',   'kishida.y@gbase.ai'],
+    ['WL', 'a', 'Wu Lan',        '@wu.lan',              'wu.l@gbase.ai'],
+    ['NA', 'b', '永田 杏奈',     '@nagata.anna',         'nagata.a@gbase.ai'],
+    ['SY', 'c', '須藤 優子',     '@sudo.yuko',           'sudo.y@gbase.ai'],
+    ['MT', 'd', '宮本 拓海',     '@miyamoto.takumi',     'miyamoto.t@gbase.ai'],
+    ['HR', 'e', '本田 涼介',     '@honda.ryosuke',       'honda.r@gbase.ai'],
+    ['OS2','a', '尾崎 さおり',   '@ozaki.saori',         'ozaki.s@gbase.ai'],
+    ['NF', 'b', '中島 文哉',     '@nakajima.fumiya',     'nakajima.f@gbase.ai'],
+  ];
+
+  const list = document.getElementById('member-list');
+  if (list) {
+    list.innerHTML = MEMBERS.map(([initials, palette, name, handle, email]) => `
+      <div class="mem-row">
+        <div class="avatar ${palette}">${initials.slice(0, 2)}</div>
+        <div class="who"><div class="name">${name}</div><div class="handle">${handle}</div></div>
+        <div class="role-pill">member</div>
+        <div class="email">${email}</div>
+        <div class="row-actions">
+          <button class="btn-icon" aria-label="編集"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon" aria-label="その他"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="0.5"/><circle cx="12" cy="12" r="0.5"/><circle cx="19" cy="12" r="0.5"/></svg></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ----- Tab switching with localStorage persistence -----
+  const TAB_KEY = 'salesroom.admin.tab';
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.admin-panel');
+  function activate(name) {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    panels.forEach(p => p.classList.toggle('active', p.dataset.panel === name));
+    try { localStorage.setItem(TAB_KEY, name); } catch {}
+  }
+  tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+  try {
+    const saved = localStorage.getItem(TAB_KEY);
+    if (saved && document.querySelector(`.tab-btn[data-tab="${saved}"]`)) activate(saved);
+  } catch {}
+</script>
+</body>
+</html>

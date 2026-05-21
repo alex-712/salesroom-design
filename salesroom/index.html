@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SalesRoom × Lumi — リデザイン</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Gallery / Hub ===== */
+  body { background: var(--canvas); }
+
+  .hub {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 36px 80px;
+  }
+
+  /* Hero */
+  .hub-hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 56px;
+    align-items: end;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .hub-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .hub-hero h1 em {
+    font-style: italic;
+    color: var(--ember);
+    font-weight: 400;
+  }
+  .hub-hero p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 56ch;
+  }
+  .hub-hero p strong { color: var(--ink); font-weight: 600; }
+  .hub-hero .right {
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.7;
+    font-family: var(--font-mono);
+  }
+  .hub-hero .right dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 6px 16px;
+  }
+  .hub-hero .right dt {
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10.5px;
+  }
+  .hub-hero .right dd {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+  }
+  .hub-hero .right .mark {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ember);
+    font-size: 14px;
+  }
+
+  /* Section heading */
+  .sec-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .sec-h h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  .sec-h .sub {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+
+  /* Gallery grid */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+  .g-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all 250ms var(--ease-out);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+  .g-card:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+    border-color: var(--line-strong);
+  }
+  .g-thumb {
+    position: relative;
+    height: 320px;
+    background: var(--canvas-sunk);
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .g-thumb iframe {
+    width: 1440px;
+    height: 1024px;
+    border: none;
+    transform: scale(0.36);
+    transform-origin: top left;
+    pointer-events: none;
+    background: var(--canvas);
+  }
+  .g-thumb .num {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    background: oklch(1 0 0 / 0.85);
+    backdrop-filter: blur(8px);
+    padding: 4px 10px;
+    border-radius: 6px;
+    z-index: 1;
+    border: 1px solid var(--line);
+  }
+  .g-thumb .open {
+    position: absolute;
+    bottom: 14px;
+    right: 16px;
+    background: var(--ink);
+    color: var(--canvas);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 200ms var(--ease-out);
+  }
+  .g-card:hover .g-thumb .open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .g-body {
+    padding: 22px 24px 24px;
+  }
+  .g-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ember);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .g-body h3 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .g-body p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 14px;
+  }
+  .g-body .moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .g-body .move {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .g-body .move.brand {
+    background: var(--ember-tint);
+    color: var(--ember-ink);
+    border-color: transparent;
+  }
+
+  /* System note */
+  .sys-note {
+    background: linear-gradient(180deg, var(--ember-tint), var(--surface) 70%);
+    border: 1px solid oklch(0.72 0.16 45 / 0.20);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 22px;
+    align-items: center;
+  }
+  .sys-note .l {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ember-ink);
+    font-weight: 600;
+  }
+  .sys-note .v {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .sys-note .v strong { color: var(--ink); }
+
+  /* Footer */
+  .hub-foot {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+
+  /* Tokens preview row */
+  .tokens {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 56px;
+  }
+  .swatch {
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-height: 120px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .swatch .name {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .swatch .hex {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-top: auto;
+  }
+  .swatch.canvas { background: var(--canvas); }
+  .swatch.ink { background: var(--ink); border-color: var(--ink); }
+  .swatch.ink .name, .swatch.ink .hex { color: var(--canvas); }
+  .swatch.ember { background: var(--ember); border-color: transparent; }
+  .swatch.ember .name, .swatch.ember .hex { color: var(--on-ember); }
+  .swatch.plum { background: var(--plum-tint); border-color: transparent; }
+  .swatch.plum .name { color: var(--plum-ink); }
+  .swatch.honey { background: var(--honey-tint); border-color: transparent; }
+  .swatch.honey .name { color: var(--honey-ink); }
+  .swatch.success { background: var(--success-tint); border-color: transparent; }
+  .swatch.success .name { color: oklch(0.32 0.10 155); }
+</style>
+</head>
+<body>
+
+  <div class="hub">
+
+    <!-- Hero -->
+    <section class="hub-hero">
+      <div>
+        <div class="eyebrow" style="margin-bottom: 14px;">
+          <span class="accent" style="color: var(--ember);">●</span>　SalesRoom × Lumi · 高保真リデザイン
+        </div>
+        <h1>SalesRoom を <em>Lumi</em> 流に — 既存機能を活かした視覚・情報設計。</h1>
+        <p>
+          現行の <strong>salesroom.gbase.ai</strong> は機能は揃っているものの、UI は標準的な管理画面でした。<strong>新機能は加えず</strong>、4 画面の <strong>情報密度・グループ化・3-pane への再構成</strong>と <strong>Lumi 暖色系</strong>への着替えのみで、同じ機能をより速く・気持ちよく使える設計に。
+        </p>
+      </div>
+
+      <div class="right">
+        <dl>
+          <dt>ブランド</dt><dd><span class="mark">Lumi</span> design system</dd>
+          <dt>対象</dt><dd>B2B セールス・SR 管理</dd>
+          <dt>画面数</dt><dd>4 (ホーム / 案件 / 顧客 / 受信箱)</dd>
+          <dt>主色</dt><dd>Ember (珊瑚橙) on Cream</dd>
+          <dt>書体</dt><dd>DM Serif Display + Manrope + JetBrains Mono</dd>
+          <dt>言語</dt><dd>日本語優先</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Tokens row -->
+    <div class="tokens">
+      <div class="swatch canvas">
+        <div class="name">Canvas</div>
+        <div class="hex">oklch(0.985 0.008 75)</div>
+      </div>
+      <div class="swatch ink">
+        <div class="name">Ink</div>
+        <div class="hex">oklch(0.235 0.020 50)</div>
+      </div>
+      <div class="swatch ember">
+        <div class="name">Ember</div>
+        <div class="hex">oklch(0.720 0.160 45)</div>
+      </div>
+      <div class="swatch plum">
+        <div class="name">Plum tint</div>
+        <div class="hex">oklch(0.940 0.040 330)</div>
+      </div>
+      <div class="swatch honey">
+        <div class="name">Honey tint</div>
+        <div class="hex">oklch(0.960 0.040 85)</div>
+      </div>
+      <div class="swatch success">
+        <div class="name">Success</div>
+        <div class="hex">oklch(0.940 0.040 155)</div>
+      </div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="sec-h">
+      <h2>4 画面のリデザイン</h2>
+      <span class="sub">クリックで原寸表示</span>
+    </div>
+
+    <div class="gallery">
+
+      <a class="g-card" href="./home.html">
+        <div class="g-thumb">
+          <span class="num">01 · ホーム</span>
+          <iframe src="./home.html" scrolling="no" tabindex="-1"></iframe>
+          <span class="open">原寸を見る →</span>
+        </div>
+        <div class="g-body">
+          <div class="g-eyebrow">時間倒序 feed → 日付グループ化</div>
+          <h3>226 件の活動を、今日 / 昨日 / 今週で読み下せるリズムに。</h3>
+          <p>
+            現状の 4 タブ (すべて / 会議 / 準備 / VOC) はそのまま維持。フラットな時間倒序を <strong>今日 / 昨日 / 今週</strong>のセクションに分け、絵文字を Lumi タイプに置き換え、markdown パスの生表示を案件チップに整形。VOC の <strong>AI Summary</strong>は既存機能なのでブロックとして強調。
+          </p>
+          <div class="moves">
+            <span class="move brand">日付グループ化</span>
+            <span class="move">絵文字 → Lumi タイプ</span>
+            <span class="move">パス整形</span>
+            <span class="move">VOC Summary を視覚化</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="g-card" href="./pipeline.html">
+        <div class="g-thumb">
+          <span class="num">02 · 案件</span>
+          <iframe src="./pipeline.html" scrolling="no" tabindex="-1"></iframe>
+          <span class="open">原寸を見る →</span>
+        </div>
+        <div class="g-body">
+          <div class="g-eyebrow">7 ステージの Kanban を整理</div>
+          <h3>3 視図・7 ステージそのままに、詳細を読みやすく。</h3>
+          <p>
+            ボード / リスト / テーブルの 3 視図と Lead → Maintenance の <strong>7 ステージ</strong>、2 フィルター (全ステージ / 全担当者) はそのまま。詳細パネルは <strong>概要 / タイムライン / VOC / 会議 / メール / 資料</strong>のタブ順を踏襲し、<strong>現在の状況 → 次のアクション → メモ → 主要コンタクト</strong> を縦に並べる。AI 会議ブリーフィングは既存ボタンとして上段に。
+          </p>
+          <div class="moves">
+            <span class="move brand">7 ステージそのまま</span>
+            <span class="move">既存タブ順を踏襲</span>
+            <span class="move">主要コンタクト整理</span>
+            <span class="move">AI ブリーフ 既存ボタン</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="g-card" href="./customers.html">
+        <div class="g-thumb">
+          <span class="num">03 · 顧客</span>
+          <iframe src="./customers.html" scrolling="no" tabindex="-1"></iframe>
+          <span class="open">原寸を見る →</span>
+        </div>
+        <div class="g-body">
+          <div class="g-eyebrow">3 列カードを整理 · 最終接触順にグループ化</div>
+          <h3>220 社を「今週 / 今月 / 休眠」のリズムで読み下す。</h3>
+          <p>
+            3 列カード構造は維持。「アクティブ案件 と 全案件」のような重複情報を <strong>ステージ別ミニバー</strong> 1 本にまとめ、製品 chip を Lumi 化。<strong>AI 検索モード</strong>ボタン (既存) は通常検索の隣に並べ、220 社を <strong>最終接触の時間</strong>で「今週 / 今月 / 休眠」に並び替え (新規データなし、並び替えのみ)。
+          </p>
+          <div class="moves">
+            <span class="move brand">既存 AI 検索ボタン</span>
+            <span class="move">ステージ分布 ミニバー</span>
+            <span class="move">重複情報を統合</span>
+            <span class="move">時間順グループ化</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="g-card" href="./inbox.html">
+        <div class="g-thumb">
+          <span class="num">04 · 受信箱</span>
+          <iframe src="./inbox.html" scrolling="no" tabindex="-1"></iframe>
+          <span class="open">原寸を見る →</span>
+        </div>
+        <div class="g-body">
+          <div class="g-eyebrow">単列リスト → 3-pane プレビュー</div>
+          <h3>振り分け前に、会議の内容が見える。</h3>
+          <p>
+            3 タブ (会議 111 / ルーティング 0 / メール 200) と業務種別フィルター (全て / business / internal / noise) はそのまま。<strong>リスト + プレビュー + ルーティング</strong>の 3-pane 構成に再配置し、中央で会議の要点・参加者・議事録抜粋・アクションアイテムを確認しながら、右で既存の <strong>プロジェクト検索ルーティング</strong>を実行。
+          </p>
+          <div class="moves">
+            <span class="move brand">3-pane プレビュー</span>
+            <span class="move">業務種別 chip</span>
+            <span class="move">議事録抜粋表示</span>
+            <span class="move">既存のテキストルーティング</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- System note -->
+    <section class="sys-note">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--ember);"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+      <div>
+        <div class="l">設計の方針</div>
+        <p class="v">
+          機能の追加・予測の追加はしない。今ある情報の <strong>密度・順序・グループ化</strong>を整え、Lumi の暖色とタイプで <strong>「読み下しのリズム」</strong>を作る。既存の AI 機能 (案件詳細の <strong>AI 会議ブリーフィング</strong>、顧客の <strong>AI 検索モード</strong>、VOC の <strong>AI Summary</strong>) は強調するが、新しい AI 予測機能は加えない。Generic CRM の冷たさから一段離れた「読み物として気持ちのいい」管理画面を目指す。
+        </p>
+      </div>
+    </section>
+
+    <div class="hub-foot">
+      <span>SalesRoom × Lumi · リデザイン提案 · 2026/05</span>
+      <span>4 画面 · 既存機能のみ · 視覚 + 情報設計のみ</span>
+    </div>
+
+  </div>
+</body>
+</html>
