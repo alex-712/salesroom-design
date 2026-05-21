@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ホーム — SalesRoom</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Home page ===== */
+
+  .page-h-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 0 22px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-h-row h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .page-h-row h1 em {
+    font-style: italic;
+    color: var(--ember);
+    font-weight: 400;
+  }
+  .page-h-row .when {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== Activity feed ===== */
+
+  .feed-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 22px 0 24px;
+    flex-wrap: wrap;
+  }
+  .feed-toolbar .grow { flex: 1; }
+  .feed-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    width: 220px;
+  }
+  .feed-search svg { color: var(--ink-3); }
+
+  .feed-group {
+    margin-bottom: 36px;
+  }
+  .feed-group-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+    padding: 0 14px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .feed-group-label .day {
+    font-family: var(--font-display);
+    font-size: 17px;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+  }
+  .feed-group-label .date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .feed-group-label .ct {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+
+  .feed-item {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 18px 14px 18px 12px;
+    border-bottom: 1px solid var(--line-subtle);
+    transition: background 150ms var(--ease-out);
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-item:hover { background: var(--surface-warm); }
+  .feed-item .when-col {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+    padding-top: 2px;
+    line-height: 1.35;
+  }
+  .feed-item .when-col .clock {
+    color: var(--ink);
+    font-size: 13.5px;
+    margin-bottom: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .feed-item .body { min-width: 0; }
+  .feed-item .body .top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .feed-item .body .proj {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    background: var(--canvas-sunk);
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+  .feed-item .body .title {
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    margin: 0 0 6px;
+    letter-spacing: -0.005em;
+  }
+  .feed-item .body .summary {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-wrap: pretty;
+  }
+  .feed-item .body .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .feed-item .body .meta .dot { width: 3px; height: 3px; background: currentColor; border-radius: 999px; }
+
+  .feed-item .actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .feed-item .actions .row-tight { gap: 4px; }
+
+  /* Action items (real product feature on VOC/meeting cards) */
+  .action-items {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--canvas-sunk);
+    border-radius: 8px;
+    border-left: 2px solid var(--honey);
+  }
+  .action-items .l {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .action-items ul {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .action-items ul li { margin-bottom: 2px; }
+
+  /* AI summary block — only for VOC (real product feature) */
+  .ai-summary {
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: linear-gradient(180deg, var(--ember-tint), oklch(0.97 0.022 70));
+    border: 1px solid oklch(0.72 0.16 45 / 0.16);
+    border-radius: 10px;
+  }
+  .ai-summary .l {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ember-ink);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .ai-summary .l svg { color: var(--ember); }
+  .ai-summary p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .ai-summary p::before { content: '\201C'; color: var(--ember); margin-right: 2px; }
+  .ai-summary p::after { content: '\201D'; color: var(--ember); margin-left: 2px; }
+
+  /* Type-color dots */
+  .typedot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    display: inline-block;
+    margin-right: 2px;
+  }
+  .typedot.meeting { background: var(--ember); }
+  .typedot.voc { background: var(--plum); }
+  .typedot.prep { background: var(--honey); }
+
+  /* Bottom — load more */
+  .feed-more {
+    text-align: center;
+    padding: 16px 0 0;
+  }
+
+  /* Chat-open mini link (real product feature on some cards) */
+  .chat-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--plum-ink);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--plum-tint);
+    font-weight: 500;
+  }
+  .chat-open:hover { background: oklch(0.92 0.06 330); }
+
+  /* Related-link pill (real product feature: 🔗 💬 VOC / 🔗 📅 会議) */
+  .rel-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    text-decoration: none;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    background: var(--canvas-sunk);
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 150ms var(--ease-out);
+    white-space: nowrap;
+  }
+  .rel-link:hover { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
+  .rel-link .link-icon { color: var(--ink-3); flex-shrink: 0; }
+  .rel-link .type-dot { width: 6px; height: 6px; border-radius: 999px; flex-shrink: 0; }
+  .rel-link .type-dot.voc { background: var(--plum); }
+  .rel-link .type-dot.meeting { background: var(--ember); }
+
+  /* ============================================================
+     DRAWER STYLES — START
+     Rollback: delete this entire block + restore modal markup
+                from <!-- ROLLBACK: MODAL MARKUP --> + restore
+                modal-IIFE in <script>.
+     ============================================================ */
+  .doc-drawer {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 50;
+  }
+  .doc-drawer[data-open="true"] { display: block; }
+  .doc-drawer .drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    background: oklch(0.235 0.020 50 / 0.20);
+    backdrop-filter: blur(1.5px);
+    -webkit-backdrop-filter: blur(1.5px);
+    animation: drawerFadeIn 160ms ease-out;
+  }
+  .doc-drawer .drawer-panel {
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 760px;
+    max-width: calc(100vw - 200px);
+    background: var(--surface);
+    border-left: 1px solid var(--line);
+    box-shadow:
+      -1px 0 0 oklch(1 0 0 / 0.6) inset,
+      -16px 0 32px -12px oklch(0.235 0.020 50 / 0.16),
+      -4px 0 8px -4px oklch(0.235 0.020 50 / 0.08);
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlideIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                max-width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                top 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                bottom 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                right 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-radius 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes drawerFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes drawerSlideIn {
+    from { transform: translateX(28px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+
+  /* Fullscreen mode — centered card at 90vw, max 1200px */
+  .doc-drawer[data-fullscreen="true"] .drawer-backdrop {
+    background: oklch(0.235 0.020 50 / 0.40);
+  }
+  .doc-drawer[data-fullscreen="true"] .drawer-panel {
+    top: 40px;
+    bottom: 40px;
+    right: 50%;
+    width: min(1200px, 90vw);
+    max-width: 90vw;
+    transform: translateX(50%);
+    border-left: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.6) inset,
+      0 32px 64px -24px oklch(0.235 0.020 50 / 0.28),
+      0 12px 24px -12px oklch(0.235 0.020 50 / 0.12);
+  }
+  .doc-drawer[data-fullscreen="true"] .drawer-body {
+    padding: 36px clamp(36px, 8vw, 96px) 32px;
+  }
+  .doc-drawer[data-fullscreen="true"] .drawer-body .meta-table {
+    max-width: 640px;
+  }
+
+  .doc-drawer .drawer-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-warm);
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-h .doc-ic {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--canvas-sunk);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink-3);
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-h .doc-fn {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-2);
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .doc-drawer .drawer-h .doc-fn strong { color: var(--ink); font-weight: 600; }
+  .doc-drawer .drawer-h .doc-type {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-h .doc-type.meeting { background: var(--canvas-sunk); color: var(--ink-2); }
+  .doc-drawer .drawer-h .doc-type.voc { background: var(--plum-tint); color: var(--plum-ink); }
+  .doc-drawer .drawer-h .doc-type.prep { background: var(--honey-tint); color: var(--honey-ink); }
+  .doc-drawer .drawer-h .doc-type .dot { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+  .doc-drawer .drawer-h .grow { flex: 1; }
+
+  .drawer-nav {
+    display: inline-flex;
+    align-items: center;
+    background: var(--canvas-sunk);
+    border-radius: 8px;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+  .drawer-nav-btn {
+    width: 26px; height: 26px;
+    border: 0;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease-out, color 120ms ease-out, opacity 120ms ease-out;
+    padding: 0;
+  }
+  .drawer-nav-btn:hover:not(:disabled) { background: var(--surface); color: var(--ink); }
+  .drawer-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .drawer-nav-counter {
+    padding: 0 8px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    user-select: none;
+  }
+
+  .doc-drawer .drawer-h .drawer-close,
+  .doc-drawer .drawer-h .drawer-fullscreen {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--ink-3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 120ms ease-out;
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-h .drawer-close:hover,
+  .doc-drawer .drawer-h .drawer-fullscreen:hover {
+    background: var(--canvas-sunk); color: var(--ink); border-color: var(--line);
+  }
+  .doc-drawer[data-fullscreen="true"] .drawer-h .drawer-fullscreen {
+    color: var(--ember-ink); background: var(--ember-tint); border-color: transparent;
+  }
+  .doc-drawer .drawer-h .drawer-fullscreen .ic-expand { display: inline-flex; }
+  .doc-drawer .drawer-h .drawer-fullscreen .ic-collapse { display: none; }
+  .doc-drawer[data-fullscreen="true"] .drawer-h .drawer-fullscreen .ic-expand { display: none; }
+  .doc-drawer[data-fullscreen="true"] .drawer-h .drawer-fullscreen .ic-collapse { display: inline-flex; }
+
+  .doc-drawer .drawer-body {
+    padding: 28px 36px 24px;
+    overflow-y: auto;
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .doc-drawer .drawer-body h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: -0.022em;
+    line-height: 1.16;
+    margin: 0 0 14px;
+    font-weight: 400;
+  }
+  .doc-drawer .drawer-body h2 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin: 24px 0 10px;
+    font-weight: 400;
+  }
+  .doc-drawer .drawer-body h3 {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 18px 0 6px;
+  }
+  .doc-drawer .drawer-body p { margin: 0 0 12px; color: var(--ink); }
+  .doc-drawer .drawer-body strong { color: var(--ink); font-weight: 600; }
+  .doc-drawer .drawer-body em { color: var(--ink-2); font-style: italic; }
+  .doc-drawer .drawer-body hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 22px 0;
+  }
+  .doc-drawer .drawer-body ul,
+  .doc-drawer .drawer-body ol {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    color: var(--ink);
+  }
+  .doc-drawer .drawer-body ul li,
+  .doc-drawer .drawer-body ol li { margin-bottom: 4px; }
+  .doc-drawer .drawer-body ul ul,
+  .doc-drawer .drawer-body ul ol,
+  .doc-drawer .drawer-body ol ul { margin: 4px 0 4px; }
+  .doc-drawer .drawer-body blockquote {
+    border-left: 2px solid var(--ember);
+    background: var(--ember-tint);
+    margin: 14px 0;
+    padding: 12px 16px;
+    color: var(--ink-2);
+    border-radius: 0 8px 8px 0;
+  }
+  .doc-drawer .drawer-body code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--canvas-sunk);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+  .doc-drawer .drawer-body .meta-table {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 22px;
+    padding: 14px 18px;
+    background: var(--canvas-sunk);
+    border-radius: 10px;
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+  .doc-drawer .drawer-body .meta-table dt {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    font-weight: 600;
+    margin: 0;
+    align-self: baseline;
+  }
+  .doc-drawer .drawer-body .meta-table dd { margin: 0; color: var(--ink); }
+  .doc-drawer .drawer-body .meta-table dd .muted { color: var(--ink-3); }
+
+  .doc-drawer .drawer-foot {
+    padding: 9px 18px 9px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 22px;
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--surface-warm);
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-foot .grow { flex: 1; }
+  .doc-drawer .drawer-foot kbd {
+    padding: 0 6px;
+    margin-right: 6px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--surface);
+    color: var(--ink-2);
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.4;
+    display: inline-block;
+  }
+
+  /* "関連文書" — appended to drawer body when current doc has relations */
+  .doc-drawer .drawer-relations {
+    margin-top: 28px;
+    padding: 16px 18px 14px;
+    background: var(--canvas-sunk);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .doc-drawer .drawer-relations .dr-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .doc-drawer .drawer-relations .dr-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .doc-drawer .drawer-relations .drawer-rel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    padding: 9px 12px 9px 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink);
+    font-size: 12.5px;
+    transition: background 150ms var(--ease-out),
+                border-color 150ms var(--ease-out),
+                transform 150ms var(--ease-out),
+                box-shadow 150ms var(--ease-out);
+    line-height: 1.3;
+    max-width: 100%;
+  }
+  .doc-drawer .drawer-relations .drawer-rel:hover {
+    background: var(--surface-warm);
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px -4px oklch(0.235 0.020 50 / 0.16);
+  }
+  .doc-drawer .drawer-relations .drawer-rel .rel-icon {
+    color: var(--ink-3);
+    flex-shrink: 0;
+    display: inline-flex;
+    line-height: 0;
+  }
+  .doc-drawer .drawer-relations .drawer-rel .rel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .doc-drawer .drawer-relations .drawer-rel .rel-dot.voc { background: var(--plum); }
+  .doc-drawer .drawer-relations .drawer-rel .rel-dot.meeting { background: var(--ember); }
+  .doc-drawer .drawer-relations .drawer-rel .rel-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--ink-2);
+  }
+  .doc-drawer .drawer-relations .drawer-rel .rel-fn {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    border-left: 1px solid var(--line);
+    padding-left: 10px;
+    margin-left: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 360px;
+  }
+  .doc-drawer .drawer-relations .drawer-rel .rel-arrow {
+    color: var(--ink-3);
+    margin-left: 2px;
+    display: inline-flex;
+    line-height: 0;
+    transition: transform 150ms var(--ease-out), color 150ms var(--ease-out);
+  }
+  .doc-drawer .drawer-relations .drawer-rel:hover .rel-arrow {
+    color: var(--ember);
+    transform: translateX(3px);
+  }
+
+  /* highlight card whose drawer is currently open */
+  .feed-item[data-doc-active] {
+    border-color: var(--ember);
+    box-shadow: 0 0 0 1px var(--ember-tint) inset;
+  }
+  /* ============================================================
+     DRAWER STYLES — END
+     ============================================================ */
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== NAV ===== -->
+  <header class="nav">
+    <a class="nav-brand" href="./index.html">
+      <span class="nav-mark">SR</span>
+      <span class="nav-name">SalesRoom</span>
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link active" href="./home.html">ホーム</a>
+      <a class="nav-link" href="./pipeline.html">案件 <span class="count">255</span></a>
+      <a class="nav-link" href="./customers.html">顧客 <span class="count">220</span></a>
+      <a class="nav-link" href="./inbox.html">受信箱 <span class="count">111</span></a>
+      <a class="nav-link" href="./admin.html">管理</a>
+    </nav>
+    <div class="nav-grow"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>検索…</span>
+      <span class="kbd">⌘K</span>
+    </div>
+    <button class="btn btn-icon btn-ghost" aria-label="notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </button>
+    <div class="nav-avatar">AY</div>
+  </header>
+
+  <!-- ===== PAGE ===== -->
+  <main class="page">
+
+    <!-- ===== ACTIVITY FEED ===== -->
+    <section>
+
+      <div class="feed-toolbar">
+        <span class="chip active">すべて <span class="count">226</span></span>
+        <span class="chip"><span class="typedot meeting"></span>会議 <span class="count">56</span></span>
+        <span class="chip"><span class="typedot prep"></span>準備 <span class="count">119</span></span>
+        <span class="chip"><span class="typedot voc"></span>VOC <span class="count">51</span></span>
+        <div class="grow"></div>
+        <div class="feed-search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>このフィードを検索</span>
+        </div>
+      </div>
+
+      <!-- TODAY -->
+      <div class="feed-group">
+        <div class="feed-group-label">
+          <span class="day">今日</span>
+          <span class="date">5月20日 (水)</span>
+          <span class="ct">8 件</span>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">11:24</div>30 分前</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge"><span class="typedot meeting"></span>会議</span>
+              <span class="proj">HISMobile / Gサポ</span>
+              <span class="badge neutral">PM: 中村</span>
+            </div>
+            <h3 class="title">スコープ調整 MTG — 価格再交渉の方向で合意</h3>
+            <p class="summary">
+              田中氏 (調達)・吉田氏 (技術) と 45 分。提案価格 ¥48M → ¥42M で再見積もり、追加スコープ 2 項目を縮小。次回 5/27 (水) に最終確認。
+            </p>
+            <div class="action-items">
+              <div class="l">アクションアイテム</div>
+              <ul>
+                <li>5/22 までに再見積もり PDF を送付 (担当: 中村)</li>
+                <li>追加 2 項目の縮小案を技術と確認 (担当: 吉田)</li>
+              </ul>
+            </div>
+            <div class="meta">
+              <span>45 分</span><span class="dot"></span>
+              <span>参加者 4 名</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="spatic-scsk">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="spatic-scsk-voc">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot voc"></span>VOC
+            </a>
+            <a href="#" class="chat-open">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              チャットを開く
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">10:02</div>1 時間前</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge plum"><span class="dot"></span>VOC</span>
+              <span class="proj">JR東日本 / 運用支援</span>
+            </div>
+            <h3 class="title">運用担当・松本氏「他社の話も聞いている」</h3>
+            <p class="summary">
+              四半期定例の終盤で発言。来期予算は 15% 減の見込み、現行価格据置なら継続検討の余地あり、他社 RFP は 6月発出を計画。
+            </p>
+            <div class="ai-summary">
+              <div class="l">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+                AI Summary
+              </div>
+              <p>更新交渉の主導権を取り戻したいなら、価格据置の確約と運用改善の具体案を 6月 RFP 前に提示するのが鍵。</p>
+            </div>
+            <div class="meta">
+              <span>記録: 中村</span><span class="dot"></span>
+              <span>VOC 6 件目</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="jr-voc">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="jr-meeting">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot meeting"></span>会議
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">08:30</div>3 時間前</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge honey"><span class="typedot prep"></span>準備</span>
+              <span class="proj">TEPCO / DX 推進</span>
+            </div>
+            <h3 class="title">TEPCO 訪問前ブリーフ — アジェンダ案 (3 案)</h3>
+            <p class="summary">
+              5/22 訪問に向けたアジェンダ案 3 種。1) 現状ヒアリング中心、2) 提案先行型、3) 競合差分にフォーカス。チームレビュー待ち。
+            </p>
+            <div class="meta">
+              <span>担当: 鈴木</span><span class="dot"></span>
+              <span>関連: 会議 4 件 / VOC 2 件</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="tepco-prep">原文を見る</button>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">07:45</div>4 時間前</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge"><span class="typedot meeting"></span>会議</span>
+              <span class="proj">Yamaha / 新規キックオフ</span>
+              <span class="badge warn"><span class="dot"></span>未割当</span>
+            </div>
+            <h3 class="title">Yamaha 楽器事業部・初回ヒアリング (60 分)</h3>
+            <p class="summary">
+              店頭 POS の刷新を検討中、現行ベンダーへの不満を 3 点共有。担当窓口は事業部 IT 室・佐々木課長。次回は 2 週間後を希望。
+            </p>
+            <div class="meta">
+              <span>60 分</span><span class="dot"></span>
+              <span>参加者 3 名</span><span class="dot"></span>
+              <span>受信箱に振り分け待ち</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="yamaha-meeting">原文を見る</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- YESTERDAY -->
+      <div class="feed-group">
+        <div class="feed-group-label">
+          <span class="day">昨日</span>
+          <span class="date">5月19日 (火)</span>
+          <span class="ct">14 件</span>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">17:50</div>昨日</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge"><span class="typedot meeting"></span>会議</span>
+              <span class="proj">Mitsubishi / 物流DX</span>
+            </div>
+            <h3 class="title">最終提案レビュー — 役員承認の方向</h3>
+            <p class="summary">
+              佐藤本部長・山田部長と 90 分。価格・スコープに合意、6月最終決済の見込み。残課題: SLA 条文 1 箇所、法務確認待ち。
+            </p>
+            <div class="meta"><span>90 分</span><span class="dot"></span><span>参加者 6 名</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="mitsubishi-meeting">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="mitsubishi-voc">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot voc"></span>VOC
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">14:15</div>昨日</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge plum"><span class="dot"></span>VOC</span>
+              <span class="proj">Toyota Connected</span>
+              <span class="badge success"><span class="dot"></span>ポジティブ</span>
+            </div>
+            <h3 class="title">「他部署にも紹介したい」 — 横展開のシグナル</h3>
+            <p class="summary">
+              担当の鈴木氏より。データ基盤チームのリーダーに繋ぎたいと申し出。同社内・新規案件の可能性 (推定 ¥30M+)。
+            </p>
+            <div class="ai-summary">
+              <div class="l">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+                AI Summary
+              </div>
+              <p>横展開シグナル。次回打ち合わせまでに新規案件の初期スコープを 1 枚にまとめておくと、紹介から契約までの摩擦が減る。</p>
+            </div>
+            <div class="meta"><span>記録: 鈴木</span><span class="dot"></span><span>VOC 12 件目</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="toyota-voc">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="toyota-meeting">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot meeting"></span>会議
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">10:00</div>昨日</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge honey"><span class="typedot prep"></span>準備</span>
+              <span class="proj">SoftBank Group / AI 基盤</span>
+            </div>
+            <h3 class="title">想定 Q&amp;A — 経営層レビュー向け (12 問)</h3>
+            <p class="summary">
+              6 月上旬の意思決定会議に向けた想定質問集。価格根拠・運用体制・データガバナンスの 3 軸でまとめ。法務確認後に PDF 化。
+            </p>
+            <div class="meta">
+              <span>担当: 山田</span><span class="dot"></span>
+              <span>関連: 会議 6 件</span>
+            </div>
+          </div>
+          <div class="actions"><button class="btn btn-sm btn-ghost" data-doc="softbank-prep">原文を見る</button></div>
+        </div>
+
+      </div>
+
+      <!-- THIS WEEK -->
+      <div class="feed-group">
+        <div class="feed-group-label">
+          <span class="day">今週</span>
+          <span class="date">5月18日 (月) まで</span>
+          <span class="ct">38 件</span>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">15:30</div>月</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge"><span class="typedot meeting"></span>会議</span>
+              <span class="proj">SoftBank Group / AI 基盤</span>
+            </div>
+            <h3 class="title">技術検証フェーズ・完了報告</h3>
+            <p class="summary">
+              PoC が想定通り完了、本格導入の方向で経営層レビュー待ち。次の節目は 6 月上旬の意思決定会議。
+            </p>
+            <div class="meta"><span>60 分</span><span class="dot"></span><span>参加者 5 名</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="softbank-meeting">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="softbank-voc">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot voc"></span>VOC
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">11:00</div>月</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge plum"><span class="dot"></span>VOC</span>
+              <span class="proj">DeNA / レコメンド最適化</span>
+            </div>
+            <h3 class="title">エンジニア組織変更で意思決定が一旦保留</h3>
+            <p class="summary">
+              CTO 交代に伴い 4-6 週の意思決定ストップ。担当継続で関係維持、再開時期は 7 月以降の見込み。
+            </p>
+            <div class="ai-summary">
+              <div class="l">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+                AI Summary
+              </div>
+              <p>4-6 週の沈黙期間中の関係維持が肝。月 1 回の軽い情報共有で「忘れられない」状態を作りに行く。</p>
+            </div>
+            <div class="meta"><span>記録: 山田</span><span class="dot"></span><span>VOC 3 件目</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm btn-ghost" data-doc="dena-voc">原文を見る</button>
+            <a href="#" class="rel-link" data-doc-jump="dena-meeting">
+              <svg class="link-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <span class="type-dot meeting"></span>会議
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="when-col"><div class="clock">09:15</div>月</div>
+          <div class="body">
+            <div class="top">
+              <span class="badge honey"><span class="typedot prep"></span>準備</span>
+              <span class="proj">NTT データ / 共通 PF</span>
+            </div>
+            <h3 class="title">競合比較表 — Accenture / Fujitsu との差分</h3>
+            <p class="summary">
+              提案最終段に向けた差別化整理。価格は中位だが、運用 SLA と既存資産との連携面で優位の整理が可能。
+            </p>
+            <div class="meta">
+              <span>担当: 田中</span><span class="dot"></span>
+              <span>関連: 会議 8 件</span>
+            </div>
+          </div>
+          <div class="actions"><button class="btn btn-sm btn-ghost" data-doc="nttdata-prep">原文を見る</button></div>
+        </div>
+
+      </div>
+
+      <div class="feed-more">
+        <button class="btn btn-secondary">さらに読み込む</button>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== Document drawer (right side) ===== -->
+<div class="doc-drawer" id="doc-drawer" role="dialog" aria-modal="true" aria-labelledby="doc-drawer-filename">
+  <div class="drawer-backdrop" data-close></div>
+  <aside class="drawer-panel" role="document">
+    <div class="drawer-h">
+      <span class="doc-ic">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </span>
+      <span class="doc-fn" id="doc-drawer-filename">—</span>
+      <span class="doc-type" id="doc-drawer-type"></span>
+      <span class="grow"></span>
+      <div class="drawer-nav" role="group" aria-label="文書ナビゲーション">
+        <button class="drawer-nav-btn" data-prev aria-label="前の文書 (↑)" title="前の文書 (↑)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+        <span class="drawer-nav-counter" id="doc-drawer-counter">— / —</span>
+        <button class="drawer-nav-btn" data-next aria-label="次の文書 (↓)" title="次の文書 (↓)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <button class="drawer-fullscreen" data-fullscreen-toggle aria-label="全画面で読む (F)" title="全画面で読む (F)">
+        <span class="ic-expand">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </span>
+        <span class="ic-collapse">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </span>
+      </button>
+      <button class="drawer-close" data-close aria-label="閉じる (Esc)" title="閉じる (Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="doc-drawer-body"></div>
+    <div class="drawer-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> 移動</span>
+      <span><kbd>F</kbd> 全画面</span>
+      <span><kbd>Esc</kbd> 閉じる</span>
+      <span class="grow"></span>
+      <span id="doc-drawer-foot-meta">—</span>
+    </div>
+  </aside>
+</div>
+
+<!--
+  ============================================================
+  ROLLBACK: MODAL MARKUP (original)
+  To revert to centered modal: uncomment this block, delete
+  the .doc-drawer block above, delete the DRAWER STYLES CSS
+  block, and restore the modal IIFE in the <script> below.
+  ============================================================
+
+<div class="doc-modal" id="doc-modal" role="dialog" aria-modal="true" aria-labelledby="doc-modal-filename">
+  <div class="backdrop" data-close></div>
+  <div class="panel" role="document">
+    <div class="doc-h">
+      <span class="doc-ic">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </span>
+      <span class="doc-fn" id="doc-modal-filename">—</span>
+      <span class="doc-type" id="doc-modal-type"></span>
+      <span class="grow"></span>
+      <button class="doc-close" data-close aria-label="閉じる">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="doc-body" id="doc-modal-body"></div>
+  </div>
+</div>
+
+-->
+
+
+<script>
+const DOCS = {
+  'spatic-scsk': {
+    filename: 'minutes-SCSK-2026-05-20',
+    type: 'meeting',
+    body: `
+      <h1>議事録 — Spatic会社・製品紹介および車載AI連携に関するご相談</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026年5月20日 (水) 17:32〜</dd>
+        <dt>場所</dt><dd>オンライン (GBase Meeting)</dd>
+        <dt>参加者</dt><dd>SCSK株式会社 モビリティ事業部 / スパティック株式会社 高垣 (副社長) 以下</dd>
+      </dl>
+      <h2>本日の議題</h2>
+      <ol>
+        <li>スパティック会社概要およびコア技術力のご紹介</li>
+        <li>AI製品ポートフォリオ (9製品) および導入事例のご紹介</li>
+        <li>H社向け Cabin AI PoC 成果と今後の展開</li>
+        <li>車載AI技術に関するディスカッション (データセキュリティ・AI for Science)</li>
+        <li>今後の連携方向およびネクストステップ</li>
+      </ol>
+      <h2>議事内容</h2>
+      <h3>1. スパティック会社概要およびコア技術力のご紹介</h3>
+      <ul>
+        <li>スパティックは 2019 年設立の AI スタートアップ。社員 65 名 (日本・中国を中心に展開)、2021 年に米国ベンチャーキャピタルより資金調達を実施。現在までに 9 つの AI 製品を開発し、大手企業 12 社、中小企業約 100 社超に提供している</li>
+        <li>情報セキュリティ関連認証はすべて取得済みであり、AI 利用に対して明確な制限を設けて運用していることをご説明した</li>
+        <li>コア技術力として以下の 4 点をご紹介した:
+          <ul>
+            <li><strong>自社開発 AI 大モデル「GBSJP」</strong> (800 億パラメータ): GPU 消費量を 80% 以上削減、2024 年 1 月から連続稼働、本番障害ゼロの実績</li>
+            <li><strong>小型化・エッジ AI 技術</strong>: 車載モデルを 2GB まで圧縮、音声モデルを従来の 1/6.4 に軽量化、推論コストは GPT-4o 比で 1/20 を実現</li>
+            <li><strong>高精度 RAG 技術</strong>: 証券・製造・コンサル業界向けに知識解析成功率 97% 以上を達成、検索・応答時間を大幅に削減</li>
+          </ul>
+        </li>
+      </ul>
+      <h3>2. AI 製品ポートフォリオおよび導入事例</h3>
+      <p>9 製品それぞれの概要を共有。<strong>製造業向け文書生成 AI</strong>、<strong>金融向け対話型 AI</strong>、<strong>車載 Cabin AI</strong> の 3 製品について、SCSK 様のモビリティ事業部における連携可能性を中心に議論した。</p>
+      <h3>3. H 社向け Cabin AI PoC 成果</h3>
+      <blockquote>音声認識精度 96.2%、エッジ推論レイテンシ 120ms 以下を達成。OEM 様からも本番化に向けたフィードバックをいただいた。</blockquote>
+      <hr>
+      <h2>ネクストステップ</h2>
+      <ul>
+        <li>5/27 (火) までに SCSK 様より社内検討状況を共有いただく</li>
+        <li>6 月上旬を目処に第二回ミーティング (技術詳細・PoC スコープ設計) を予定</li>
+        <li>NDA 締結準備を並行して進める</li>
+      </ul>
+    `,
+    relations: [{ type: 'voc', target: 'spatic-scsk-voc' }],
+  },
+
+  'jr-voc': {
+    filename: 'voc-JR-East-matsumoto-2026-05-20',
+    type: 'voc',
+    body: `
+      <h1>運用担当・松本氏「他社の話も聞いている」</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>JR 東日本 / 運用支援</dd>
+        <dt>発言者</dt><dd>松本氏 (運用 部長)</dd>
+        <dt>記録者</dt><dd>中村</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 20 日 10:02</dd>
+      </dl>
+      <h2>発言概要</h2>
+      <p>四半期定例の終盤で発言。前半は通常の運用報告、後半に予算・更新意向のテーマで踏み込んだ言及があった。</p>
+      <ul>
+        <li>来期予算は <strong>15% 減</strong>の見込み</li>
+        <li>現行価格据置なら継続検討の余地あり</li>
+        <li>他社 RFP は <strong>6 月発出</strong>を計画</li>
+        <li>過去 2 四半期、SLA 達成率は 99.4% (要求値達成)</li>
+      </ul>
+      <h2>背景文脈</h2>
+      <blockquote>松本氏は半年前に運用責任者に昇格、現行ベンダー (我々) との価格交渉権限を一手に握る。同氏は過去にコスト削減プロジェクトを社内表彰されている。</blockquote>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>更新交渉の主導権を取り戻したいなら、価格据置の確約と運用改善の具体案を 6 月 RFP 前に提示するのが鍵。RFP が発出されてから動くのでは遅い。次の四半期定例 (6/15 想定) でテーブルに乗せるべき。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'jr-meeting' }],
+  },
+
+  'tepco-prep': {
+    filename: 'prep-TEPCO-agenda-2026-05-22',
+    type: 'prep',
+    body: `
+      <h1>TEPCO 訪問前ブリーフ — アジェンダ案 (3 案)</h1>
+      <dl class="meta-table">
+        <dt>訪問日</dt><dd>2026 年 5 月 22 日 (金) 14:00〜16:00</dd>
+        <dt>場所</dt><dd>東京電力 本社 23F 会議室</dd>
+        <dt>当方</dt><dd>鈴木 (営業)・田中 (PM)・吉田 (技術)</dd>
+        <dt>先方</dt><dd>DX 推進室 課長以下 4 名</dd>
+      </dl>
+      <h2>案 1 — 現状ヒアリング中心</h2>
+      <p>関係構築フェーズの想定。90% は質問、10% は会社紹介。深い課題理解を獲得し、次回提案フェーズで <strong>本命</strong>に進める段取り。</p>
+      <ul>
+        <li>現行運用の苦労ポイント (45 分)</li>
+        <li>意思決定プロセスと予算サイクル (20 分)</li>
+        <li>当社製品 1 枚紹介 (10 分)</li>
+      </ul>
+      <h2>案 2 — 提案先行型</h2>
+      <p>初回から提案を持ち込み、温度感を測る。<strong>意思決定スピードを優先</strong>するパターン。リスクは「準備不足」と取られる可能性。</p>
+      <h2>案 3 — 競合差分にフォーカス</h2>
+      <p>競合 (Accenture / Fujitsu) との比較を当方視点で先に提示。受け身ではなく <strong>主導権を取りに行く</strong>パターン。先方の DX 推進室は競合とも進行中の認識あり。</p>
+      <hr>
+      <h2>レビュー待ち</h2>
+      <p>チームレビューを 5/21 (木) 朝に予定。3 案のうちどれを正式アジェンダにするか、または融合案を作るかを決定。</p>
+    `,
+  },
+
+  'yamaha-meeting': {
+    filename: 'minutes-Yamaha-kickoff-2026-05-20',
+    type: 'meeting',
+    body: `
+      <h1>Yamaha 楽器事業部・初回ヒアリング</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 20 日 07:45〜08:45 (60 分)</dd>
+        <dt>場所</dt><dd>オンライン</dd>
+        <dt>先方</dt><dd>事業部 IT 室・佐々木 (課長) 他 2 名</dd>
+        <dt>当方</dt><dd>営業 2 名 (新規)</dd>
+        <dt>状態</dt><dd><strong>受信箱に振り分け待ち</strong> — 案件未割当</dd>
+      </dl>
+      <h2>会議目的</h2>
+      <p>店頭 POS の刷新を検討中。現行ベンダー (社名は非公開希望) との契約は来年 3 月期限、それまでに代替候補を選定したい。</p>
+      <h2>現行ベンダーへの不満 (3 点)</h2>
+      <ol>
+        <li>レスポンスタイムが遅い (照会から 3 営業日以上かかる)</li>
+        <li>カスタマイズ対応の柔軟性が低い</li>
+        <li>価格説明が不透明、見積もり毎にロジックが変わる</li>
+      </ol>
+      <h2>次回</h2>
+      <ul>
+        <li>2 週間後を希望 — 6/3 (火) 前後の調整を依頼</li>
+        <li>事前資料として、レスポンス SLA・カスタマイズ事例・料金体系の 3 点を提示してほしい</li>
+      </ul>
+    `,
+  },
+
+  'mitsubishi-meeting': {
+    filename: 'minutes-Mitsubishi-final-review-2026-05-19',
+    type: 'meeting',
+    body: `
+      <h1>最終提案レビュー — 役員承認の方向</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 19 日 17:50〜19:20 (90 分)</dd>
+        <dt>場所</dt><dd>三菱物流 本社</dd>
+        <dt>先方</dt><dd>佐藤 (本部長)・山田 (部長) 他 4 名</dd>
+        <dt>当方</dt><dd>営業・PM・技術 計 2 名</dd>
+      </dl>
+      <h2>合意事項</h2>
+      <ul>
+        <li>価格・スコープに合意</li>
+        <li>6 月最終決済の見込み (役員会 6/12 を予定)</li>
+        <li>本契約は 7 月 1 日施行を目指す</li>
+      </ul>
+      <h2>残課題</h2>
+      <ol>
+        <li><strong>SLA 条文 1 箇所</strong> — 障害発生時のエスカレーション時間。先方法務確認待ち</li>
+        <li>セキュリティ監査の追加実施可否 (当方より提案)</li>
+      </ol>
+      <hr>
+      <h2>意思決定の所感</h2>
+      <p>佐藤本部長は明確に肯定的、山田部長も中盤から積極的に発言。法務の最終チェックさえ通れば役員会通過の可能性は高い。</p>
+    `,
+    relations: [{ type: 'voc', target: 'mitsubishi-voc' }],
+  },
+
+  'toyota-voc': {
+    filename: 'voc-Toyota-Connected-suzuki-2026-05-19',
+    type: 'voc',
+    body: `
+      <h1>「他部署にも紹介したい」 — 横展開のシグナル</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>Toyota Connected</dd>
+        <dt>発言者</dt><dd>鈴木氏 (担当)</dd>
+        <dt>記録者</dt><dd>鈴木 (当方)</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 19 日 14:15</dd>
+        <dt>感触</dt><dd><strong>ポジティブ</strong></dd>
+      </dl>
+      <h2>発言概要</h2>
+      <ul>
+        <li>担当の鈴木氏より、データ基盤チームのリーダーに繋ぎたいと申し出</li>
+        <li>同社内・新規案件の可能性 (推定 <strong>¥30M+</strong>)</li>
+        <li>「現状の運用が非常にスムーズで、隣の部署も同じ課題を抱えている」とのコメント</li>
+      </ul>
+      <h2>背景文脈</h2>
+      <p>過去 6 ヶ月、月次レポートのフィードバックは平均で 4.5/5。鈴木氏は <strong>社内で初の評価者</strong>になりつつあり、同様の評価が他部署にも伝わっている可能性あり。</p>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>横展開シグナル。次回打ち合わせまでに新規案件の初期スコープを 1 枚にまとめておくと、紹介から契約までの摩擦が減る。鈴木氏が紹介者として動きやすいよう、<strong>すぐに見せられる資料</strong>を準備するべき。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'toyota-meeting' }],
+  },
+
+  'softbank-prep': {
+    filename: 'prep-SoftBank-QA-12questions-2026-05-19',
+    type: 'prep',
+    body: `
+      <h1>想定 Q&amp;A — 経営層レビュー向け (12 問)</h1>
+      <dl class="meta-table">
+        <dt>対象会議</dt><dd>SoftBank Group・経営層レビュー (6 月上旬予定)</dd>
+        <dt>担当</dt><dd>山田</dd>
+        <dt>関連</dt><dd>会議 6 件</dd>
+        <dt>状態</dt><dd>法務確認後に PDF 化</dd>
+      </dl>
+      <h2>軸 1 — 価格根拠 (4 問)</h2>
+      <ol>
+        <li>競合と比較して 15% 高い理由</li>
+        <li>3 年契約での価格保証範囲</li>
+        <li>追加スコープ発生時の追加コスト構造</li>
+        <li>解約時の費用と移行支援</li>
+      </ol>
+      <h2>軸 2 — 運用体制 (4 問)</h2>
+      <ol>
+        <li>専任エンジニアの確保数とスキルレベル</li>
+        <li>24/7 サポートの実態 (人員・SLA)</li>
+        <li>障害発生時のエスカレーション</li>
+        <li>運用引き継ぎの想定タイムライン</li>
+      </ol>
+      <h2>軸 3 — データガバナンス (4 問)</h2>
+      <ol>
+        <li>データ保管・処理拠点 (国内/海外)</li>
+        <li>第三者監査の頻度と公開範囲</li>
+        <li>個人情報マスキングのデフォルト挙動</li>
+        <li>退会・データ削除リクエストへの対応 SLA</li>
+      </ol>
+    `,
+  },
+
+  'softbank-meeting': {
+    filename: 'minutes-SoftBank-tech-review-2026-05-18',
+    type: 'meeting',
+    body: `
+      <h1>技術検証フェーズ・完了報告</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 18 日 (月) 15:30〜16:30 (60 分)</dd>
+        <dt>場所</dt><dd>オンライン</dd>
+        <dt>参加者</dt><dd>SoftBank Group AI 基盤チーム 3 名・当方 2 名</dd>
+      </dl>
+      <h2>PoC 結果サマリー</h2>
+      <ul>
+        <li>3 ユースケースで全件目標値クリア</li>
+        <li>推論レイテンシ平均 180ms (目標 250ms 以下)</li>
+        <li>運用想定の負荷テストも問題なし</li>
+      </ul>
+      <h2>次の節目</h2>
+      <p><strong>6 月上旬の意思決定会議</strong>で経営層レビュー。本格導入の方向で議論される予定。</p>
+      <hr>
+      <p>当方からの宿題: 想定 Q&amp;A (12 問) を 5/22 までに提出。</p>
+    `,
+    relations: [{ type: 'voc', target: 'softbank-voc' }],
+  },
+
+  'dena-voc': {
+    filename: 'voc-DeNA-recsys-2026-05-18',
+    type: 'voc',
+    body: `
+      <h1>エンジニア組織変更で意思決定が一旦保留</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>DeNA / レコメンド最適化</dd>
+        <dt>記録者</dt><dd>山田</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 18 日 (月) 11:00</dd>
+      </dl>
+      <h2>発言概要</h2>
+      <ul>
+        <li>CTO 交代に伴い <strong>4-6 週の意思決定ストップ</strong></li>
+        <li>担当は継続のまま関係維持</li>
+        <li>再開時期は <strong>7 月以降</strong>の見込み</li>
+      </ul>
+      <h2>背景文脈</h2>
+      <p>新 CTO は社内昇格、レコメンド領域の知見は薄い。当方の担当窓口 (鈴木氏) は新 CTO との関係構築をこれから始める段階。</p>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>4-6 週の沈黙期間中の関係維持が肝。月 1 回の軽い情報共有で「忘れられない」状態を作りに行く。新 CTO 着任後すぐに営業攻勢をかけると逆効果のリスク。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'dena-meeting' }],
+  },
+
+  'nttdata-prep': {
+    filename: 'prep-NTTData-competitive-2026-05-18',
+    type: 'prep',
+    body: `
+      <h1>競合比較表 — Accenture / Fujitsu との差分</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>NTT データ / 共通 PF</dd>
+        <dt>担当</dt><dd>田中</dd>
+        <dt>関連</dt><dd>会議 8 件</dd>
+      </dl>
+      <h2>当方ポジショニング</h2>
+      <ul>
+        <li><strong>価格</strong>: 中位 (Accenture +12%、Fujitsu -8%)</li>
+        <li><strong>運用 SLA</strong>: 当方が最も厳しい (99.95% / 30 分以内対応)</li>
+        <li><strong>既存資産との連携</strong>: 既存基盤と当方の API は 80% 互換、移行コスト最小</li>
+      </ul>
+      <h2>差別化メッセージ</h2>
+      <ol>
+        <li>「価格は中位だが、運用と連携で確実に元が取れる」</li>
+        <li>「過去 3 案件で SLA 達成率 100%」</li>
+        <li>「移行期間 3 ヶ月 → 1.5 ヶ月に短縮可能」</li>
+      </ol>
+      <hr>
+      <p>提案最終段に向けた差別化整理。最終提案ドラフトは 5/26 までに作成予定。</p>
+    `,
+  },
+
+  /* ============================================================
+     関連文書 (rel-link targets) — 由カード rel-link → drawer
+     ============================================================ */
+
+  'spatic-scsk-voc': {
+    filename: 'voc-SCSK-takagaki-2026-05-20',
+    type: 'voc',
+    body: `
+      <h1>SCSK 様・初回ミーティングの感触</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>SCSK 株式会社 / モビリティ事業部</dd>
+        <dt>発言者</dt><dd>高垣 副社長 (スパティック株式会社) — 当方ヒアリングに対する反応として整理</dd>
+        <dt>記録者</dt><dd>中村</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 20 日 (水) ミーティング直後</dd>
+      </dl>
+      <h2>SCSK 側の関心ポイント (3 点)</h2>
+      <ol>
+        <li><strong>情報セキュリティ認証</strong> — 全認証取得済みである点を高く評価。社内コンプライアンス部門への説明資料として既存資料が転用可能か確認したい</li>
+        <li><strong>H 社向け Cabin AI PoC 実績</strong> — 「実際の OEM 案件で本番化に向けた評価まで進んでいる」という事実を最も重視。同様の事例が他社にもあるか質問あり</li>
+        <li><strong>推論コスト 1/20 の検証</strong> — GPT-4o 比のベンチマーク条件を技術詳細まで開示してほしい (NDA 締結後の前提)</li>
+      </ol>
+      <h2>懸念事項</h2>
+      <ul>
+        <li>大モデル「GBSJP」の知財整理 (日本顧客向けの帰属の扱い)</li>
+        <li>サポート体制 — 国内拠点でのインシデント対応の SLA</li>
+      </ul>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>SCSK 側は技術力に対しては肯定的だが、本番化フェーズの "現実的な運用コスト" と "国内サポート" に対して具体回答を求めている。NDA 締結を急ぎ、第二回ミーティングで <strong>本番運用ケース</strong>を中心に据えると、意思決定スピードが上がる可能性が高い。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'spatic-scsk' }],
+  },
+
+  'jr-meeting': {
+    filename: 'minutes-JR-East-Q-review-2026-05-20',
+    type: 'meeting',
+    body: `
+      <h1>JR 東日本・四半期運用定例</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 20 日 (水) 09:00〜10:00 (60 分)</dd>
+        <dt>場所</dt><dd>JR 東日本 本社・第 3 会議室</dd>
+        <dt>当方</dt><dd>中村 (営業)・田中 (運用 PM)</dd>
+        <dt>先方</dt><dd>運用部 松本 (部長)・伊藤 (課長)・佐々木 (担当)</dd>
+      </dl>
+      <h2>議題</h2>
+      <ol>
+        <li>過去四半期の運用実績レビュー</li>
+        <li>SLA 達成状況の確認</li>
+        <li>来期予算と更新意向についての意見交換</li>
+      </ol>
+      <h2>議事内容</h2>
+      <h3>1. 運用実績</h3>
+      <ul>
+        <li>SLA 達成率 99.4% (目標 99.0% に対し上回り)</li>
+        <li>緊急対応 3 件 — いずれも 30 分以内に一次対応完了</li>
+        <li>定例リリースは予定通り 12 本実施</li>
+      </ul>
+      <h3>2. 予算と更新意向 (会議終盤で松本氏発言)</h3>
+      <blockquote>来期は予算が 15% 削減される見込み。現行価格据置なら継続検討の余地はあるが、他社 RFP も <strong>6 月発出</strong>を計画している。他社の話も聞いている段階だ。</blockquote>
+      <p>同席の伊藤課長・佐々木担当は表情を変えず、松本氏個人の判断ではなく組織決定であることが伺えた。</p>
+      <hr>
+      <h2>当方所感 / ネクストステップ</h2>
+      <ul>
+        <li>4 半期定例の議事録は VOC として別途記録 (記録: 中村)</li>
+        <li>6/15 想定の次回定例までに、価格据置 + 運用改善具体案をテーブルに乗せる必要</li>
+        <li>6 月 RFP 発出前に "競合に対する優位性" を明文化して提示する</li>
+      </ul>
+    `,
+    relations: [{ type: 'voc', target: 'jr-voc' }],
+  },
+
+  'mitsubishi-voc': {
+    filename: 'voc-Mitsubishi-sato-2026-05-19',
+    type: 'voc',
+    body: `
+      <h1>佐藤本部長「長期パートナーシップを期待」</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>三菱物流 / 物流 DX</dd>
+        <dt>発言者</dt><dd>佐藤 本部長</dd>
+        <dt>記録者</dt><dd>当方 PM</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 19 日 (火) 19:30 (最終提案レビュー終了直後)</dd>
+        <dt>感触</dt><dd><strong>ポジティブ</strong></dd>
+      </dl>
+      <h2>発言概要</h2>
+      <ul>
+        <li>「価格・スコープは合意できる水準。<strong>長期 5 年スパン</strong>で考えると、SLA の厳しさは当社のリスク管理上むしろ必要」</li>
+        <li>「役員会は 6/12 に予定している。法務確認が間に合えば <strong>6 月中の最終決済</strong>は問題ない」</li>
+        <li>「7 月施行を前提に、6 月後半でキックオフ準備を進めてほしい」</li>
+      </ul>
+      <h2>背景文脈</h2>
+      <p>佐藤本部長は 3 年前にも当方の前身案件で評価をいただいており、今回も <strong>当方を推す姿勢</strong>が明確。山田部長は当初慎重な姿勢だったが、本提案の運用 SLA に対する説明で態度が軟化。</p>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>残課題は SLA 条文の法務確認 1 点のみ。法務との直接対話を提案し、6/10 までに最終確認を完了させると役員会通過の確度が最大化される。佐藤本部長との次の接触は役員会直前 (6/10 〜 6/11) を狙うと効果的。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'mitsubishi-meeting' }],
+  },
+
+  'toyota-meeting': {
+    filename: 'minutes-Toyota-Connected-monthly-2026-05-19',
+    type: 'meeting',
+    body: `
+      <h1>Toyota Connected・月次運用レビュー</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 19 日 (火) 13:00〜14:30 (90 分)</dd>
+        <dt>場所</dt><dd>Toyota Connected 名古屋オフィス</dd>
+        <dt>当方</dt><dd>鈴木 (担当)</dd>
+        <dt>先方</dt><dd>データ活用推進室・鈴木氏 / 山口氏</dd>
+      </dl>
+      <h2>議題</h2>
+      <ol>
+        <li>5 月分の運用実績レポート</li>
+        <li>レコメンドモデルの精度推移</li>
+        <li>横展開に関する社内議論の共有</li>
+      </ol>
+      <h2>議事内容</h2>
+      <h3>1. 5 月分 KPI</h3>
+      <ul>
+        <li>レコメンド CTR: 前月比 +0.4pt</li>
+        <li>レイテンシ平均: 110ms (目標 150ms 以下)</li>
+        <li>運用インシデント: 0 件</li>
+      </ul>
+      <h3>2. 横展開の議論 (会議終盤・14:15 頃の発言)</h3>
+      <blockquote>「現状の運用が非常にスムーズで、隣の<strong>データ基盤チーム</strong>も同じ課題を抱えている。リーダーに繋ぎたいので、初期スコープを 1 枚にまとめておいてもらえると助かる」 — 鈴木氏</blockquote>
+      <p>同社内・新規案件の可能性 (推定 <strong>¥30M+</strong>) として VOC に別途記録 (記録: 鈴木 / 当方)。</p>
+      <hr>
+      <h2>ネクストステップ</h2>
+      <ul>
+        <li>新規案件の初期スコープを 1 枚紙にまとめる (5/22 まで・担当: 鈴木)</li>
+        <li>データ基盤チームとの紹介 MTG を 5/30 前後で調整</li>
+      </ul>
+    `,
+    relations: [{ type: 'voc', target: 'toyota-voc' }],
+  },
+
+  'softbank-voc': {
+    filename: 'voc-SoftBank-AI-platform-2026-05-18',
+    type: 'voc',
+    body: `
+      <h1>AI 基盤チームリーダー「6 月の経営層レビューで本格導入の方向」</h1>
+      <dl class="meta-table">
+        <dt>顧客</dt><dd>SoftBank Group / AI 基盤</dd>
+        <dt>発言者</dt><dd>AI 基盤チームリーダー</dd>
+        <dt>記録者</dt><dd>山田</dd>
+        <dt>記録日</dt><dd>2026 年 5 月 18 日 (月) 16:30 (PoC 完了報告直後)</dd>
+        <dt>感触</dt><dd><strong>ポジティブ</strong></dd>
+      </dl>
+      <h2>発言概要</h2>
+      <ul>
+        <li>PoC は <strong>想定通りの精度</strong>で完了、本格導入の方向で経営層レビューに上申予定</li>
+        <li>経営層レビューは <strong>6 月上旬</strong>、本契約は 7 月から開始したい</li>
+        <li>想定 Q&amp;A (価格根拠・運用体制・データガバナンス) の 3 軸での回答を 5/22 までに欲しい</li>
+      </ul>
+      <h2>背景文脈</h2>
+      <p>AI 基盤チームリーダーは 1 年前に競合 (Accenture) を否決した経緯あり。当方の PoC 結果に対しては <strong>明確に肯定的</strong>。経営層 (CFO 含む 5 名) は <strong>コスト圧力</strong>を強く意識する傾向あり、想定 Q&amp;A は価格根拠を最重視する必要。</p>
+      <hr>
+      <h2>AI Summary</h2>
+      <p>PoC 結果は社内技術評価としては合格。次の障壁は <strong>経営層のコスト納得度</strong>。想定 Q&amp;A の「軸 1 価格根拠」セクションを <strong>最も厚く</strong>準備すべき。特に 3 年 TCO で他社と比較する形式が有効と推定。</p>
+    `,
+    relations: [{ type: 'meeting', target: 'softbank-meeting' }],
+  },
+
+  'dena-meeting': {
+    filename: 'minutes-DeNA-recsys-progress-2026-05-18',
+    type: 'meeting',
+    body: `
+      <h1>DeNA・レコメンド最適化 進捗 MTG</h1>
+      <dl class="meta-table">
+        <dt>日時</dt><dd>2026 年 5 月 18 日 (月) 10:00〜11:00 (60 分)</dd>
+        <dt>場所</dt><dd>オンライン</dd>
+        <dt>当方</dt><dd>山田 (PM)・吉田 (技術)</dd>
+        <dt>先方</dt><dd>データプラットフォーム部・鈴木氏 (担当) 他 2 名</dd>
+      </dl>
+      <h2>議題</h2>
+      <ol>
+        <li>5 月実装スコープの進捗報告</li>
+        <li>次フェーズ (Q3) の意思決定スケジュール</li>
+        <li>(突発議題) CTO 交代に伴う影響確認</li>
+      </ol>
+      <h2>議事内容</h2>
+      <h3>1. 進捗報告</h3>
+      <ul>
+        <li>5 月予定スコープは <strong>100% 完了</strong></li>
+        <li>レコメンド CTR: 前月比 +0.7pt (PoC 比 +1.2pt)</li>
+        <li>運用インシデント: 軽微 1 件 (24 時間以内に解消)</li>
+      </ul>
+      <h3>2. CTO 交代の影響 (会議冒頭で先方より共有)</h3>
+      <blockquote>新 CTO は社内昇格で 5/15 着任。前任 CTO のデータ・AI 領域への投資方針はいったん <strong>棚卸し</strong>される予定。次フェーズの意思決定は <strong>4-6 週ストップ</strong>、7 月以降の再開を目処にしてほしい。</blockquote>
+      <p>当方担当窓口 (鈴木氏) は継続のまま、関係維持を希望する旨を確認。同氏は新 CTO との関係構築をこれから始める段階。</p>
+      <hr>
+      <h2>ネクストステップ</h2>
+      <ul>
+        <li>5 月運用は予定通り継続 — 6 月以降は <strong>運用フェーズのみ</strong>に絞る (新規開発は一旦保留)</li>
+        <li>月 1 回の軽い情報共有 (KPI 報告のみ・15 分) を継続</li>
+        <li>新 CTO 着任後の "AI 領域方針発表" を待ち、7 月以降に正式な進捗 MTG を再開</li>
+      </ul>
+    `,
+    relations: [{ type: 'voc', target: 'dena-voc' }],
+  },
+};
+
+(function () {
+  const drawer = document.getElementById('doc-drawer');
+  if (!drawer) return;
+  const filenameEl = document.getElementById('doc-drawer-filename');
+  const typeEl     = document.getElementById('doc-drawer-type');
+  const bodyEl     = document.getElementById('doc-drawer-body');
+  const counterEl  = document.getElementById('doc-drawer-counter');
+  const footMetaEl = document.getElementById('doc-drawer-foot-meta');
+  const prevBtn    = drawer.querySelector('[data-prev]');
+  const nextBtn    = drawer.querySelector('[data-next]');
+  const typeLabels = { meeting: '会議', voc: 'VOC', prep: '準備' };
+
+  let docOrder = [];
+  let docButtons = [];
+  let currentIdx = -1;     // -1 = closed or off-list
+
+  function collectDocs() {
+    // Only feed cards' main 「原文を見る」 buttons participate in prev/next nav order.
+    docButtons = Array.from(document.querySelectorAll('.feed-item [data-doc]'));
+    docOrder = docButtons.map((b) => b.getAttribute('data-doc'));
+  }
+
+  function highlight(idx, on) {
+    const btn = docButtons[idx];
+    if (!btn) return;
+    const card = btn.closest('.feed-item');
+    if (!card) return;
+    if (on) card.setAttribute('data-doc-active', '');
+    else card.removeAttribute('data-doc-active');
+  }
+
+  function renderRelationsHTML(doc) {
+    if (!doc.relations || !doc.relations.length) return '';
+    const items = doc.relations.map((rel) => {
+      const typeLabel = typeLabels[rel.type] || rel.type;
+      const target = DOCS[rel.target];
+      const targetFn = target ? target.filename : rel.target;
+      return (
+        '<a class="drawer-rel" href="#" data-doc-jump="' + rel.target + '">' +
+          '<span class="rel-icon">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+          '</span>' +
+          '<span class="rel-dot ' + rel.type + '"></span>' +
+          '<span class="rel-label">' + typeLabel + '</span>' +
+          '<span class="rel-fn">' + targetFn + '</span>' +
+          '<span class="rel-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>' +
+        '</a>'
+      );
+    }).join('');
+    return (
+      '<div class="drawer-relations">' +
+        '<div class="dr-label">関連文書</div>' +
+        '<div class="dr-items">' + items + '</div>' +
+      '</div>'
+    );
+  }
+
+  function applyDoc(docId) {
+    const doc = DOCS[docId];
+    if (!doc) return false;
+    filenameEl.innerHTML = '<strong>' + doc.filename + '</strong>';
+    typeEl.className = 'doc-type ' + doc.type;
+    typeEl.innerHTML = '<span class="dot"></span>' + (typeLabels[doc.type] || doc.type);
+    bodyEl.innerHTML = doc.body + renderRelationsHTML(doc);
+    bodyEl.scrollTop = 0;
+    footMetaEl.textContent = doc.filename;
+    return true;
+  }
+
+  function renderAtIdx(idx) {
+    if (currentIdx >= 0 && currentIdx !== idx) highlight(currentIdx, false);
+    if (!applyDoc(docOrder[idx])) return;
+    currentIdx = idx;
+    highlight(idx, true);
+    counterEl.textContent = (idx + 1) + ' / ' + docOrder.length;
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === docOrder.length - 1;
+  }
+
+  function renderOffList(docId) {
+    if (currentIdx >= 0) highlight(currentIdx, false);
+    if (!applyDoc(docId)) return;
+    currentIdx = -1;
+    counterEl.textContent = '関連';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+  }
+
+  function openDoc(docId) {
+    collectDocs();
+    drawer.setAttribute('data-open', 'true');
+    document.body.style.overflow = 'hidden';
+    const idx = docOrder.indexOf(docId);
+    if (idx >= 0) renderAtIdx(idx);
+    else renderOffList(docId);
+  }
+
+  function close() {
+    if (currentIdx >= 0) highlight(currentIdx, false);
+    currentIdx = -1;
+    drawer.setAttribute('data-open', 'false');
+    document.body.style.overflow = '';
+  }
+
+  function step(delta) {
+    if (currentIdx < 0) return;
+    const ni = currentIdx + delta;
+    if (ni < 0 || ni >= docOrder.length) return;
+    renderAtIdx(ni);
+  }
+
+  const FULLSCREEN_KEY = 'sr-doc-drawer-fullscreen';
+  function applyFullscreen(on) {
+    if (on) {
+      drawer.setAttribute('data-fullscreen', 'true');
+    } else {
+      drawer.removeAttribute('data-fullscreen');
+    }
+    try { localStorage.setItem(FULLSCREEN_KEY, on ? '1' : '0'); } catch (_) {}
+  }
+  function toggleFullscreen() {
+    applyFullscreen(drawer.getAttribute('data-fullscreen') !== 'true');
+  }
+  try {
+    if (localStorage.getItem(FULLSCREEN_KEY) === '1') applyFullscreen(true);
+  } catch (_) {}
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-prev]')) { step(-1); return; }
+    if (e.target.closest('[data-next]')) { step(1); return; }
+    if (e.target.closest('[data-fullscreen-toggle]')) { toggleFullscreen(); return; }
+    if (e.target.closest('[data-close]')) { close(); return; }
+    const jumpBtn = e.target.closest('[data-doc-jump]');
+    if (jumpBtn) {
+      e.preventDefault();
+      openDoc(jumpBtn.getAttribute('data-doc-jump'));
+      return;
+    }
+    const btn = e.target.closest('[data-doc]');
+    if (btn) {
+      e.preventDefault();
+      openDoc(btn.getAttribute('data-doc'));
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (drawer.getAttribute('data-open') !== 'true') return;
+    if (e.key === 'Escape')    { close(); return; }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); step(-1); return; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); step(1);  return; }
+    if (e.key === 'j' || e.key === 'J') { step(1);  return; }
+    if (e.key === 'k' || e.key === 'K') { step(-1); return; }
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); return; }
+  });
+})();
+</script>
+
+</body>
+</html>

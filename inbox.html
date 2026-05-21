@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>受信箱 — SalesRoom</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Inbox 3-pane ===== */
+  .inbox-wrap {
+    height: calc(100vh - 60px);
+    display: grid;
+    grid-template-columns: 380px 1fr 360px;
+    overflow: hidden;
+  }
+
+  /* === Pane 1: List === */
+  .pane-list {
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-warm);
+    overflow: hidden;
+  }
+  .list-head {
+    padding: 20px 20px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .list-head .topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .list-head h1 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .list-head .create-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 7px;
+  }
+  .list-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--canvas-sunk);
+    padding: 3px;
+    border-radius: 10px;
+  }
+  .list-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .list-tab .count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    background: var(--surface);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .list-tab.active {
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: var(--shadow-soft);
+  }
+  .list-tab.active .count {
+    background: var(--ember-tint);
+    color: var(--ember-ink);
+  }
+
+  /* Sub-filter chips */
+  .list-filters {
+    display: flex;
+    gap: 5px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--line-subtle);
+    background: var(--surface-warm);
+  }
+  .list-filters .chip {
+    font-size: 11px;
+    padding: 3px 9px;
+  }
+
+  /* Status row */
+  .list-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background: var(--ember-tint);
+    border-bottom: 1px solid oklch(0.72 0.16 45 / 0.15);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ember-ink);
+  }
+  .list-status .num { font-weight: 700; }
+
+  /* List items */
+  .list-items {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .list-item {
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--line-subtle);
+    cursor: pointer;
+    transition: background 120ms var(--ease-out);
+  }
+  .list-item:hover { background: oklch(1 0 0 / 0.5); }
+  .list-item.selected {
+    background: var(--surface);
+    border-left: 3px solid var(--ember);
+    padding-left: 17px;
+  }
+  .list-item .top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .list-item .date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .list-item .mtg-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .list-item .mtg-tag.business { background: var(--ember-tint); color: var(--ember-ink); }
+  .list-item .mtg-tag.internal { background: var(--plum-tint);  color: var(--plum-ink); }
+  .list-item .mtg-tag.noise    { background: var(--canvas-sunk); color: var(--ink-3); }
+  .list-item .title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .list-item .meta {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .list-item.routed .title { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+  .list-item.routed .routed-to {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+  }
+  .list-item.routed .routed-to::before {
+    content: '→ ';
+    color: var(--success);
+  }
+
+  /* === Pane 2: Preview === */
+  .pane-preview {
+    background: var(--surface);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .prev-head {
+    padding: 26px 32px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .prev-head .crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .prev-head .crumbs .mtg-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: none;
+    letter-spacing: 0;
+    background: var(--ember-tint);
+    color: var(--ember-ink);
+    font-weight: 700;
+  }
+  .prev-head h2 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .prev-head .mtg-meta {
+    display: flex;
+    gap: 18px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  .prev-head .mtg-meta .v { color: var(--ink); font-weight: 500; }
+  .prev-head .mtg-meta .v.mono { font-family: var(--font-mono); }
+
+  .prev-body {
+    padding: 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .prev-section h3 {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .prev-section .text {
+    font-size: 13.5px;
+    color: var(--ink-2);
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+  .prev-section .text strong { color: var(--ink); font-weight: 600; }
+  .prev-section ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .prev-section ul li { margin-bottom: 4px; }
+
+  /* Attendees */
+  .attendees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .att-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 5px;
+    background: var(--canvas-sunk);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .att-chip .av {
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    background: var(--plum-tint);
+    color: var(--plum-ink);
+    display: grid; place-items: center;
+    font-size: 9.5px;
+    font-weight: 600;
+  }
+  .att-chip.external .av {
+    background: var(--ember-tint);
+    color: var(--ember-ink);
+  }
+  .att-chip.external { background: var(--surface); border: 1px solid var(--line-strong); }
+  .att-chip .role {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-left: 4px;
+  }
+
+  /* Transcript snippet */
+  .transcript {
+    background: var(--canvas-sunk);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    border-left: 2px solid var(--line-strong);
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .transcript .speaker {
+    font-weight: 600;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-top: 8px;
+  }
+  .transcript .speaker:first-child { margin-top: 0; }
+  .transcript p { margin: 2px 0 0; }
+
+  /* === Pane 3: Route === */
+  .pane-route {
+    border-left: 1px solid var(--line);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .route-head {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .route-head .l {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .route-head h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: -0.018em;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .route-search {
+    padding: 14px 22px 8px;
+  }
+  .route-search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--canvas-sunk);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+  }
+  .route-search-input svg { color: var(--ink-3); }
+  .route-search-input input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .route-search-input input::placeholder { color: var(--ink-3); }
+
+  .route-recent {
+    padding: 0 22px 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 14px;
+  }
+
+  .route-matches {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 14px 14px;
+  }
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms var(--ease-out);
+  }
+  .match-row:hover { background: var(--canvas-sunk); }
+  .match-row .check {
+    width: 16px; height: 16px;
+    border-radius: 5px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .match-row.selected .check {
+    background: var(--ember);
+    border-color: var(--ember);
+    position: relative;
+  }
+  .match-row.selected .check::after {
+    content: '';
+    position: absolute;
+    inset: 3px 4px 4px 3px;
+    border-bottom: 2px solid var(--on-ember);
+    border-right: 2px solid var(--on-ember);
+    transform: rotate(45deg);
+    width: 4px; height: 8px;
+  }
+  .match-row .info { flex: 1; min-width: 0; }
+  .match-row .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .match-row .stage {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  .route-actions {
+    padding: 16px 22px 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .route-actions .btn { justify-content: center; width: 100%; }
+  .skip {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-3);
+    cursor: pointer;
+    padding: 6px;
+  }
+  .skip:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="nav">
+    <a class="nav-brand" href="./index.html"><span class="nav-mark">SR</span><span class="nav-name">SalesRoom</span></a>
+    <nav class="nav-links">
+      <a class="nav-link" href="./home.html">ホーム</a>
+      <a class="nav-link" href="./pipeline.html">案件 <span class="count">255</span></a>
+      <a class="nav-link" href="./customers.html">顧客 <span class="count">220</span></a>
+      <a class="nav-link active" href="./inbox.html">受信箱 <span class="count">111</span></a>
+      <a class="nav-link" href="./admin.html">管理</a>
+    </nav>
+    <div class="nav-grow"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>検索…</span><span class="kbd">⌘K</span>
+    </div>
+    <button class="btn btn-icon btn-ghost" aria-label="notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </button>
+    <div class="nav-avatar">AY</div>
+  </header>
+
+  <main class="inbox-wrap">
+
+    <!-- === LIST PANE === -->
+    <section class="pane-list">
+      <div class="list-head">
+        <div class="topline" style="align-items: center;">
+          <div class="list-tabs">
+            <button class="list-tab active">会議 <span class="count">111</span></button>
+            <button class="list-tab">ルーティング <span class="count">0</span></button>
+            <button class="list-tab">メール <span class="count">200</span></button>
+          </div>
+          <button class="btn btn-secondary create-btn">＋ 作成</button>
+        </div>
+      </div>
+
+      <div class="list-filters">
+        <span class="chip active">全て <span class="count">111</span></span>
+        <span class="chip">business <span class="count">68</span></span>
+        <span class="chip">internal <span class="count">31</span></span>
+        <span class="chip">noise <span class="count">12</span></span>
+      </div>
+
+      <div class="list-status">
+        <span>待処理 <span class="num">111</span> 件</span>
+        <span>5月20日</span>
+      </div>
+
+      <div class="list-items">
+
+        <div class="list-item selected">
+          <div class="top">
+            <span class="date">5/20 14:30</span>
+            <span class="mtg-tag business">営業会議</span>
+          </div>
+          <h4 class="title">HISMobile・Gサポ — スコープ調整 MTG</h4>
+          <div class="meta">45 分 · 参加者 4 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/20 10:00</span>
+            <span class="mtg-tag business">定例会</span>
+          </div>
+          <h4 class="title">JR東日本・運用支援 四半期定例</h4>
+          <div class="meta">60 分 · 参加者 5 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/20 09:00</span>
+            <span class="mtg-tag business">戦略会議</span>
+          </div>
+          <h4 class="title">Yamaha 楽器事業部 初回ヒアリング</h4>
+          <div class="meta">60 分 · 参加者 3 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/19 17:50</span>
+            <span class="mtg-tag business">経営会議</span>
+          </div>
+          <h4 class="title">Mitsubishi・物流DX 最終提案レビュー</h4>
+          <div class="meta">90 分 · 参加者 6 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/19 14:15</span>
+            <span class="mtg-tag business">定例会</span>
+          </div>
+          <h4 class="title">Toyota Connected 月次共有</h4>
+          <div class="meta">45 分 · 参加者 4 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/19 11:00</span>
+            <span class="mtg-tag internal">社内</span>
+          </div>
+          <h4 class="title">パイプライン週次レビュー (営業部)</h4>
+          <div class="meta">30 分 · 参加者 8 名</div>
+        </div>
+
+        <div class="list-item routed">
+          <div class="top">
+            <span class="date">5/19 09:00</span>
+            <span class="mtg-tag business">営業会議</span>
+          </div>
+          <h4 class="title">SoftBank Group・AI 基盤 経営層レビュー</h4>
+          <div class="meta">60 分 · 参加者 7 名</div>
+          <div class="routed-to">SoftBank Group / AI 基盤</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/18 16:00</span>
+            <span class="mtg-tag business">提案会</span>
+          </div>
+          <h4 class="title">TEPCO DX 推進 アジェンダレビュー</h4>
+          <div class="meta">45 分 · 参加者 5 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/18 14:30</span>
+            <span class="mtg-tag noise">noise</span>
+          </div>
+          <h4 class="title">[自動録音] ランチミーティング</h4>
+          <div class="meta">28 分 · 参加者 3 名</div>
+        </div>
+
+        <div class="list-item">
+          <div class="top">
+            <span class="date">5/18 10:00</span>
+            <span class="mtg-tag business">技術検討</span>
+          </div>
+          <h4 class="title">DeNA レコメンド最適化 技術検討</h4>
+          <div class="meta">60 分 · 参加者 4 名</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- === PREVIEW PANE === -->
+    <section class="pane-preview">
+      <div class="prev-head">
+        <div class="crumbs">
+          <span>会議</span><span>·</span>
+          <span class="mtg-tag">営業会議</span>
+          <span>·</span><span>未割当</span>
+        </div>
+        <h2>HISMobile・Gサポ — スコープ調整 MTG</h2>
+        <div class="mtg-meta">
+          <span>日時 <span class="v mono">5/20 14:30 – 15:15</span></span>
+          <span>場所 <span class="v">Zoom</span></span>
+          <span>所要 <span class="v mono">45 分</span></span>
+          <span>記録 <span class="v">中村</span></span>
+        </div>
+      </div>
+
+      <div class="prev-body">
+
+        <section class="prev-section">
+          <h3>要点</h3>
+          <p class="text">
+            HISMobile 法人サポート部の刷新案件 (¥48M) について、調達部・田中氏と技術部・吉田氏とスコープ最終調整。<strong>価格は再交渉の方向で口頭合意</strong>、追加スコープ 2 項目 (24/7 オンコール・専任 SE) を縮小し ¥42M (-12.5%) で再見積もりを行う方針で揃った。次回 5/27 (水) に最終確認 MTG。
+          </p>
+        </section>
+
+        <section class="prev-section">
+          <h3>参加者</h3>
+          <div class="attendees">
+            <span class="att-chip external">
+              <span class="av">TN</span>田中 健一
+              <span class="role">調達部主任</span>
+            </span>
+            <span class="att-chip external">
+              <span class="av">YS</span>吉田 修
+              <span class="role">技術部部長</span>
+            </span>
+            <span class="att-chip">
+              <span class="av">NK</span>中村 大輔
+              <span class="role">担当 SE</span>
+            </span>
+            <span class="att-chip">
+              <span class="av">AY</span>有沢 由香
+              <span class="role">営業</span>
+            </span>
+          </div>
+        </section>
+
+        <section class="prev-section">
+          <h3>決定事項</h3>
+          <ul>
+            <li>提案価格 ¥48M → ¥42M で再見積もり (削減幅 ¥6M)</li>
+            <li>追加スコープから 24/7 オンコールを縮小 (営業時間内のみ)</li>
+            <li>専任 SE 1 名 → 兼任 SE 2 名で対応</li>
+            <li>次回 MTG: 5/27 (水) 14:00 — 最終確認</li>
+          </ul>
+        </section>
+
+        <section class="prev-section">
+          <h3>議事録抜粋</h3>
+          <div class="transcript">
+            <span class="speaker">田中 (調達)</span>
+            <p>正直、社内決裁ラインが ¥45M なので、これ以上は持って帰れない。技術側で受けられる範囲を絞ってもらえると助かります。</p>
+            <span class="speaker">吉田 (技術)</span>
+            <p>24/7 のオンコール部分は、立ち上げ初年度に限れば営業時間内対応でも問題ないと思います。本番運用が安定したらフルカバーへ。</p>
+            <span class="speaker">中村 (SE)</span>
+            <p>承知しました。専任 SE についても、最初は兼任 2 名体制で実質的に同等のレベルを担保できる構成を作ります。</p>
+            <span class="speaker">田中 (調達)</span>
+            <p>その方向で社内に持って帰って、5/27 の MTG で正式回答します。¥42M ならまず通る感触はあります。</p>
+          </div>
+        </section>
+
+        <section class="prev-section">
+          <h3>アクションアイテム</h3>
+          <ul>
+            <li>5/22 までに再見積もり PDF を送付 (中村)</li>
+            <li>5/24 までに技術側スコープ縮小案の最終化 (吉田)</li>
+            <li>5/27 MTG の招集メール送付 (中村)</li>
+          </ul>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- === ROUTE PANE === -->
+    <aside class="pane-route">
+      <div class="route-head">
+        <div class="l">この会議を割り当てる</div>
+        <h3>案件を選択</h3>
+      </div>
+
+      <div class="route-search">
+        <div class="route-search-input">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="HISMobile" placeholder="プロジェクトを検索…">
+        </div>
+      </div>
+
+      <div class="route-recent">候補</div>
+
+      <div class="route-matches">
+        <div class="match-row selected">
+          <div class="check"></div>
+          <div class="info">
+            <div class="name">HISMobile / Gサポ</div>
+            <div class="stage">Negotiation · ¥48M</div>
+          </div>
+        </div>
+        <div class="match-row">
+          <div class="check"></div>
+          <div class="info">
+            <div class="name">HISMobile / モバイル分析</div>
+            <div class="stage">Maintenance</div>
+          </div>
+        </div>
+        <div class="match-row">
+          <div class="check"></div>
+          <div class="info">
+            <div class="name">HISMobile / 店頭タブレット</div>
+            <div class="stage">Lead</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="route-actions">
+        <button class="btn btn-primary">割り当てる</button>
+        <button class="btn btn-secondary">＋ 新規案件として登録</button>
+        <div class="skip">この会議をスキップ</div>
+      </div>
+    </aside>
+
+  </main>
+</div>
+</body>
+</html>

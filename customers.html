@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>顧客 — SalesRoom</title>
+<link rel="stylesheet" href="./shared.css">
+<style>
+  /* ===== Customers page ===== */
+  .cust-head {
+    padding: 24px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .cust-head .topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .cust-head h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
+    margin: 0 0 4px;
+  }
+  .cust-head .sub {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .cust-head .actions { display: flex; gap: 8px; }
+
+  /* Search row — normal search + AI mode toggle */
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .reg-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    transition: all 200ms var(--ease-out);
+  }
+  .reg-search:focus-within { border-color: var(--ink-2); }
+  .reg-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+  .reg-search input::placeholder { color: var(--ink-3); }
+  .reg-search svg { color: var(--ink-3); }
+
+  .ai-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    background: linear-gradient(180deg, var(--ember), oklch(0.66 0.16 35));
+    color: var(--on-ember);
+    border: none;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 2px oklch(0.55 0.16 35 / 0.30), inset 0 1px 0 oklch(1 0 0 / 0.25);
+    flex-shrink: 0;
+  }
+  .ai-mode-btn:hover { background: linear-gradient(180deg, var(--ember-hover), oklch(0.62 0.16 35)); }
+
+  /* Group sections */
+  .group-section { margin-bottom: 36px; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 0 4px 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .group-head .day {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+  }
+  .group-head .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .group-head .ct {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+
+  /* Card grid */
+  .cust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .cust-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 180ms var(--ease-out);
+    text-decoration: none;
+    color: inherit;
+  }
+  .cust-card:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px oklch(0.235 0.020 50 / 0.06);
+  }
+  .cust-card .top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .cust-card .name {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+  }
+  .cust-card .when {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cust-card .when.stale { color: oklch(0.4 0.14 25); }
+
+  /* Mini pipeline distribution bar */
+  .pipe-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .pipe-mini .l {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .pipe-mini .l .total {
+    font-family: var(--font-mono);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  .pipe-mini .bar {
+    display: flex;
+    height: 6px;
+    gap: 2px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--canvas-sunk);
+  }
+  .pipe-mini .bar span { display: block; }
+  .pipe-mini .legend {
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .pipe-mini .legend .it { display: inline-flex; align-items: center; gap: 4px; }
+  .pipe-mini .legend .it .d { width: 6px; height: 6px; border-radius: 999px; }
+
+  .seg-lead { background: oklch(0.78 0.04 75); }
+  .seg-prop { background: var(--honey); }
+  .seg-neg  { background: var(--ember); }
+  .seg-dev  { background: var(--plum); }
+  .seg-test { background: oklch(0.58 0.10 195); }
+  .seg-del  { background: oklch(0.62 0.12 155); }
+  .seg-main { background: oklch(0.58 0.018 240); }
+
+  .cust-card .prods {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .prod-chip {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--canvas-sunk);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
+  }
+  .prod-chip.more {
+    background: transparent;
+    color: var(--ink-3);
+    border-style: dashed;
+  }
+
+  /* Dormant section (subdued) */
+  .cust-card.dormant {
+    background: var(--canvas-sunk);
+    border-color: var(--line);
+  }
+  .cust-card.dormant .name { color: var(--ink-2); }
+
+  /* Show more */
+  .show-more-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="nav">
+    <a class="nav-brand" href="./index.html"><span class="nav-mark">SR</span><span class="nav-name">SalesRoom</span></a>
+    <nav class="nav-links">
+      <a class="nav-link" href="./home.html">ホーム</a>
+      <a class="nav-link" href="./pipeline.html">案件 <span class="count">255</span></a>
+      <a class="nav-link active" href="./customers.html">顧客 <span class="count">220</span></a>
+      <a class="nav-link" href="./inbox.html">受信箱 <span class="count">111</span></a>
+      <a class="nav-link" href="./admin.html">管理</a>
+    </nav>
+    <div class="nav-grow"></div>
+    <div class="nav-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span>検索…</span><span class="kbd">⌘K</span>
+    </div>
+    <button class="btn btn-icon btn-ghost" aria-label="notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    </button>
+    <div class="nav-avatar">AY</div>
+  </header>
+
+  <main class="page">
+
+    <section class="cust-head">
+      <div class="search-row">
+        <div class="reg-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="顧客名・製品で絞り込み…">
+        </div>
+        <button class="ai-mode-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 14.06 2 22"/><path d="m17.5 5.5 1 1"/><path d="M22 2 12 12"/><path d="M14.06 14.06 22 22"/><path d="m5.5 17.5 1 1"/><path d="M2 12c0-5.52 4.48-10 10-10"/></svg>
+          AI 検索モード
+        </button>
+        <button class="btn btn-secondary btn-sm">＋ 顧客を追加</button>
+      </div>
+    </section>
+
+    <!-- 今週 (本週内) -->
+    <section class="group-section">
+      <div class="group-head">
+        <span class="day">今週</span>
+        <span class="sub">最終接触 7 日以内</span>
+        <span class="ct">28 社</span>
+      </div>
+      <div class="cust-grid">
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">HISMobile</h3>
+            <span class="when stale">5 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">3 案件</span></div>
+            <div class="bar">
+              <span class="seg-neg" style="width: 50%;"></span>
+              <span class="seg-dev" style="width: 30%;"></span>
+              <span class="seg-main" style="width: 20%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 1</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Mobile Support</span>
+            <span class="prod-chip">Analytics</span>
+            <span class="prod-chip more">+1</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">TEPCO</h3>
+            <span class="when">2 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">5 案件</span></div>
+            <div class="bar">
+              <span class="seg-prop" style="width: 40%;"></span>
+              <span class="seg-neg" style="width: 20%;"></span>
+              <span class="seg-dev" style="width: 20%;"></span>
+              <span class="seg-test" style="width: 20%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-prop"></span>Prop 2</span>
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 1</span>
+              <span class="it"><span class="d seg-test"></span>Test 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Data Platform</span>
+            <span class="prod-chip">DX Consulting</span>
+            <span class="prod-chip more">+2</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">JR東日本</h3>
+            <span class="when">1 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-neg" style="width: 60%;"></span>
+              <span class="seg-main" style="width: 40%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Operations Suite</span>
+            <span class="prod-chip">Asset Track</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Toyota Connected</h3>
+            <span class="when">昨日</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">4 案件</span></div>
+            <div class="bar">
+              <span class="seg-lead" style="width: 25%;"></span>
+              <span class="seg-dev" style="width: 50%;"></span>
+              <span class="seg-main" style="width: 25%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-lead"></span>Lead 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 2</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Telemetry Lake</span>
+            <span class="prod-chip">ML Pipeline</span>
+            <span class="prod-chip more">+2</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">SoftBank Group</h3>
+            <span class="when">3 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">3 案件</span></div>
+            <div class="bar">
+              <span class="seg-prop" style="width: 33%;"></span>
+              <span class="seg-dev" style="width: 33%;"></span>
+              <span class="seg-test" style="width: 34%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-prop"></span>Prop 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 1</span>
+              <span class="it"><span class="d seg-test"></span>Test 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Foundation Model</span>
+            <span class="prod-chip">Edge Inference</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Mitsubishi 商事</h3>
+            <span class="when">昨日</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-neg" style="width: 80%;"></span>
+              <span class="seg-test" style="width: 20%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-test"></span>Test 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Logistics Opt.</span>
+            <span class="prod-chip">Forecast Engine</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- 今月 (1ヶ月以内) -->
+    <section class="group-section">
+      <div class="group-head">
+        <span class="day">今月</span>
+        <span class="sub">最終接触 30 日以内</span>
+        <span class="ct">74 社</span>
+      </div>
+      <div class="cust-grid">
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Yamaha</h3>
+            <span class="when">11 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">1 案件</span></div>
+            <div class="bar">
+              <span class="seg-prop" style="width: 100%;"></span>
+            </div>
+            <div class="legend"><span class="it"><span class="d seg-prop"></span>Proposal</span></div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Retail / IoT</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Bridgestone</h3>
+            <span class="when">14 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-neg" style="width: 50%;"></span>
+              <span class="seg-dev" style="width: 50%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Smart Factory</span>
+            <span class="prod-chip">IoT Edge</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">KDDI</h3>
+            <span class="when">8 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">3 案件</span></div>
+            <div class="bar">
+              <span class="seg-neg" style="width: 33%;"></span>
+              <span class="seg-dev" style="width: 33%;"></span>
+              <span class="seg-main" style="width: 34%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-neg"></span>Neg 1</span>
+              <span class="it"><span class="d seg-dev"></span>Dev 1</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Edge Inference</span>
+            <span class="prod-chip">Network Ops</span>
+            <span class="prod-chip more">+1</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Mizuho 銀行</h3>
+            <span class="when">22 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-test" style="width: 50%;"></span>
+              <span class="seg-main" style="width: 50%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-test"></span>Test 1</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Risk Model</span>
+            <span class="prod-chip">Compliance</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Recruit</h3>
+            <span class="when">19 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-test" style="width: 50%;"></span>
+              <span class="seg-del" style="width: 50%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-test"></span>Test 1</span>
+              <span class="it"><span class="d seg-del"></span>Deliv 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">QA Phase</span>
+            <span class="prod-chip">HR Tech</span>
+          </div>
+        </a>
+
+        <a class="cust-card" href="#">
+          <div class="top">
+            <h3 class="name">Panasonic</h3>
+            <span class="when">25 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">2 案件</span></div>
+            <div class="bar">
+              <span class="seg-lead" style="width: 50%;"></span>
+              <span class="seg-main" style="width: 50%;"></span>
+            </div>
+            <div class="legend">
+              <span class="it"><span class="d seg-lead"></span>Lead 1</span>
+              <span class="it"><span class="d seg-main"></span>Maint 1</span>
+            </div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Smart Factory</span>
+            <span class="prod-chip">Asset Track</span>
+          </div>
+        </a>
+
+        <div class="show-more-row">
+          <button class="btn btn-secondary btn-sm">＋ 68 社をさらに表示</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 休眠 (90 日以上) -->
+    <section class="group-section">
+      <div class="group-head">
+        <span class="day">休眠</span>
+        <span class="sub">最終接触 90 日以上</span>
+        <span class="ct">42 社</span>
+      </div>
+      <div class="cust-grid">
+
+        <a class="cust-card dormant" href="#">
+          <div class="top">
+            <h3 class="name">SMBC 銀行</h3>
+            <span class="when stale">112 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">1 案件</span></div>
+            <div class="bar">
+              <span class="seg-del" style="width: 100%;"></span>
+            </div>
+            <div class="legend"><span class="it"><span class="d seg-del"></span>Delivery</span></div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Compliance</span>
+          </div>
+        </a>
+
+        <a class="cust-card dormant" href="#">
+          <div class="top">
+            <h3 class="name">DeNA</h3>
+            <span class="when stale">98 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">1 案件</span></div>
+            <div class="bar">
+              <span class="seg-dev" style="width: 100%;"></span>
+            </div>
+            <div class="legend"><span class="it"><span class="d seg-dev"></span>Development</span></div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">ML Pipeline</span>
+          </div>
+        </a>
+
+        <a class="cust-card dormant" href="#">
+          <div class="top">
+            <h3 class="name">ANA HD</h3>
+            <span class="when stale">156 日前</span>
+          </div>
+          <div class="pipe-mini">
+            <div class="l"><span>案件分布</span><span class="total">1 案件</span></div>
+            <div class="bar">
+              <span class="seg-main" style="width: 100%;"></span>
+            </div>
+            <div class="legend"><span class="it"><span class="d seg-main"></span>Maintenance</span></div>
+          </div>
+          <div class="prods">
+            <span class="prod-chip">Asset Track</span>
+          </div>
+        </a>
+
+        <div class="show-more-row">
+          <button class="btn btn-secondary btn-sm">＋ 39 社をさらに表示</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
